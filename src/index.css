@@ -5,6 +5,8 @@
   --color-palette-light: #E4DFD7;
   --color-palette-taupe: #A59B8F;
   --color-palette-earth: #61564A;
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 }
 
 :root {

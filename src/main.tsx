@@ -4,18 +4,27 @@ import App from './App.tsx';
 import './index.css';
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 
-class ErrorBoundary extends Component<{children: ReactNode}, {hasError: boolean, error: Error | null}> {
-  constructor(props: {children: ReactNode}) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
-  static getDerivedStateFromError(error: Error) {
+interface ErrorBoundaryProps {
+  children: ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  public override state: ErrorBoundaryState = { hasError: false, error: null };
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { hasError: true, error };
   }
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+
+  override componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("ErrorBoundary caught an error", error, errorInfo);
   }
-  render() {
+
+  override render() {
     if (this.state.hasError) {
       return (
         <div style={{ padding: '20px', background: 'white', color: 'red', fontFamily: 'monospace' }}>

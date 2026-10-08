@@ -1,10 +1,42 @@
-import { createClient } from '@supabase/supabase-js';
+/**
+ * OBS-STORE · Local Supabase Stub
+ * Supabase ha sido desvinculado a petición del usuario.
+ * Todas las operaciones ahora se gestionan de forma local y persistente en el navegador.
+ */
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  console.warn('Faltan variables de entorno para Supabase. Verifica tu archivo .env');
-}
-
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+export const supabase = {
+  auth: {
+    async getSession() {
+      return { data: { session: null }, error: null };
+    },
+    onAuthStateChange() {
+      return {
+        data: {
+          subscription: {
+            unsubscribe() {},
+          },
+        },
+      };
+    },
+    async signInWithPassword() {
+      return { data: null, error: null };
+    },
+    async signOut() {
+      return { error: null };
+    },
+  },
+  from() {
+    return {
+      select() { return this; },
+      insert() { return this; },
+      update() { return this; },
+      delete() { return this; },
+      eq() { return this; },
+      order() { return this; },
+      limit() { return this; },
+      single() { return Promise.resolve({ data: null, error: null }); },
+      maybeSingle() { return Promise.resolve({ data: null, error: null }); },
+      then(callback: any) { return Promise.resolve({ data: [], error: null }).then(callback); },
+    };
+  },
+};

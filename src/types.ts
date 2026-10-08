@@ -81,8 +81,12 @@ export interface OrderCustomer {
   address: string;
   province: string;
   district: string;
-  zone: string;
+  zone?: string;
   notes?: string;
+  document?: string;
+  documentNumber?: string;
+  docNumber?: string;
+  reference?: string;
   coords?: { lat: number; lng: number };
 }
 
@@ -97,12 +101,24 @@ export interface Order {
   id: string;
   orderNumber: string;
   trackingCode: string;
+  numero_pedido?: string;
+  codigo_tracking?: string;
+  cliente_nombre?: string;
+  cliente_email?: string;
   customer: OrderCustomer;
   items: OrderItem[];
   subtotal: number;
   shippingFee: number;
   total: number;
+  adelanto?: number;
+  saldo?: number;
+  descuento?: number;
+  tipoEntrega?: string;
+  agenciaEnvio?: string;
+  sedeShalom?: string;
+  numeroNota?: string;
   status: OrderStatus;
+  estado?: OrderStatus;
   createdAt: string;
   updatedAt: string;
   estimatedDelivery: string;

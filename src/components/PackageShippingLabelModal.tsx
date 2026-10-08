@@ -24,6 +24,8 @@ interface PackageShippingLabelModalProps {
   onClose: () => void;
   order: {
     id: string;
+    orderNumber?: string;
+    receiptNumber?: string;
     trackingCode?: string;
     customer: {
       name: string;

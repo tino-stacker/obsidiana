@@ -7,10 +7,13 @@ import {
   Clock, 
   Truck, 
   Building2, 
-  Compass,
-  DollarSign,
-  Trash2,
-  Edit2
+  Compass, 
+  DollarSign, 
+  Trash2, 
+  Edit2, 
+  ShieldCheck,
+  Send,
+  Sparkles
 } from 'lucide-react';
 import { Province, District, Zone } from '../types';
 
@@ -70,7 +73,7 @@ export const ShippingZonesModule: React.FC<ShippingZonesModuleProps> = ({
 
   const handleEditZonePrice = (zone: Zone) => {
     if (!onUpdateZone) return;
-    const newPrice = prompt(`Editar tarifa para "${zone.name}" (S/):`, zone.shippingFee.toString());
+    const newPrice = prompt(`Editar tarifa de envío para "${zone.name}" (S/):`, zone.shippingFee.toString());
     if (newPrice !== null && !isNaN(Number(newPrice))) {
       onUpdateZone(zone.id, { shippingFee: Number(newPrice) });
     }
@@ -78,7 +81,7 @@ export const ShippingZonesModule: React.FC<ShippingZonesModuleProps> = ({
 
   const handleDeleteZoneClick = (zone: Zone) => {
     if (!onDeleteZone) return;
-    if (window.confirm(`¿Estás seguro que deseas ELIMINAR la zona "${zone.name}"? Los distritos asociados también se eliminarán o quedarán sin zona.`)) {
+    if (window.confirm(`¿Estás seguro que deseas eliminar la zona "${zone.name}"? Los distritos asociados quedarán sin zona.`)) {
       onDeleteZone(zone.id);
     }
   };
@@ -94,30 +97,65 @@ export const ShippingZonesModule: React.FC<ShippingZonesModuleProps> = ({
     <div className="space-y-6">
       
       {/* Top Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-slate-200 p-5 rounded-xl shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-stone-200/80 shadow-xs">
         <div>
-          <h1 className="text-lg font-bold text-slate-900 flex items-center space-x-2">
-            <span>Gestión de Envíos por Zonas, Distritos & Provincias</span>
-            <span className="bg-blue-50 text-blue-600 text-xs px-2.5 py-0.5 rounded-full border border-blue-200">
-              {provinces.length} Provincias
-            </span>
-          </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Configura coberturas geográficas, tarifas en Soles (S/), tiempos de tránsito y empresas courier por zona.
+          <div className="flex items-center space-x-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+            <span className="text-[11px] font-bold tracking-widest text-stone-500 uppercase">LOGÍSTICA & TARIFAS</span>
+          </div>
+          <h1 className="text-2xl font-black text-stone-900 tracking-tight mt-1">Zonas y Tarifas de Envío</h1>
+          <p className="text-xs text-stone-500 mt-1 font-light">
+            Configuración de coberturas geográficas, precios de despacho en Soles (S/) y couriers asignados (Motorizado Express / Shalom / Olva).
           </p>
         </div>
 
         <button
           onClick={onOpenAddZone}
-          className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-xs transition-all flex items-center space-x-2 self-start md:self-auto"
+          className="flex items-center space-x-2 px-5 py-2.5 bg-stone-950 hover:bg-stone-800 text-amber-300 rounded-xl text-xs font-bold shadow-md shadow-stone-950/10 transition-all cursor-pointer self-start sm:self-auto active:scale-95"
         >
           <Plus className="w-4 h-4" />
           <span>Agregar Nueva Zona</span>
         </button>
       </div>
 
-      {/* Province Tabs Selector */}
-      <div className="flex items-center space-x-2 overflow-x-auto pb-2 no-scrollbar">
+      {/* Logistics Overview Highlights */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-white p-4 rounded-xl border border-stone-200/80 shadow-xs flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 shrink-0">
+            <Truck className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-[10px] text-stone-400 uppercase font-bold tracking-wider">Lima Express</p>
+            <p className="text-sm font-black text-stone-900">Motorizado Propio / Olva</p>
+            <p className="text-[10px] text-stone-500 mt-0.5">24 - 48h a Domicilio</p>
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-xl border border-stone-200/80 shadow-xs flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center text-sky-600 shrink-0">
+            <Building2 className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-[10px] text-stone-400 uppercase font-bold tracking-wider">Provincias Nacional</p>
+            <p className="text-sm font-black text-stone-900">Agencias Shalom / Olva</p>
+            <p className="text-[10px] text-stone-500 mt-0.5">2 - 4 días con recojo DNI</p>
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-xl border border-stone-200/80 shadow-xs flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
+            <ShieldCheck className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-[10px] text-stone-400 uppercase font-bold tracking-wider">Empaque & Seguro</p>
+            <p className="text-sm font-black text-stone-900">Estuche Joyero Rígido</p>
+            <p className="text-[10px] text-stone-500 mt-0.5">Precinto de seguridad 100%</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Province Selector Bar */}
+      <div className="bg-white p-2 rounded-2xl border border-stone-200/80 shadow-xs flex items-center space-x-1.5 overflow-x-auto">
         {provinces.map((prov) => {
           const isSelected = prov.id === selectedProvinceId;
           const zoneCount = zones.filter((z) => z.provinceId === prov.id).length;
@@ -126,92 +164,95 @@ export const ShippingZonesModule: React.FC<ShippingZonesModuleProps> = ({
             <button
               key={prov.id}
               onClick={() => setSelectedProvinceId(prov.id)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center space-x-2 border ${
-                isSelected
-                  ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                  : 'bg-white text-slate-600 hover:text-slate-900 border-slate-200'
-              }`}
+              className={`
+                px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center space-x-2 cursor-pointer
+                ${
+                  isSelected
+                    ? 'bg-stone-950 text-white shadow-sm'
+                    : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+                }
+              `}
             >
-              <Compass className="w-3.5 h-3.5" />
+              <Compass className={`w-3.5 h-3.5 ${isSelected ? 'text-amber-400' : 'text-stone-400'}`} />
               <span>{prov.name}</span>
-              <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${
-                isSelected ? 'bg-blue-700 text-white' : 'bg-slate-100 text-slate-500'
+              <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                isSelected ? 'bg-amber-400 text-stone-950' : 'bg-stone-100 text-stone-500'
               }`}>
-                {zoneCount} Zonas
+                {zoneCount}
               </span>
             </button>
           );
         })}
       </div>
 
-      {/* Zones Table for Selected Province */}
+      {/* Main Grid: Zones List & Districts Mapping */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Left 2 Cols: Zones & Rates */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs">
-            <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+          <div className="bg-white border border-stone-200/80 rounded-2xl overflow-hidden shadow-xs">
+            <div className="p-4 bg-stone-50 border-b border-stone-200/80 flex items-center justify-between">
               <div>
-                <h3 className="text-xs font-bold text-slate-900 flex items-center space-x-2">
-                  <Building2 className="w-4 h-4 text-blue-600" />
-                  <span>Zonas y Tarifas de Despacho en {currentProvince?.name}</span>
+                <h3 className="text-xs font-black text-stone-900 uppercase tracking-wider flex items-center space-x-2">
+                  <MapPin className="w-4 h-4 text-amber-500" />
+                  <span>Zonas de Despacho en {currentProvince?.name}</span>
                 </h3>
               </div>
-              <span className="text-xs text-slate-500">Código: {currentProvince?.code}</span>
+              <span className="text-[11px] text-stone-500 font-mono">Código: {currentProvince?.code}</span>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  <tr className="bg-stone-950 text-stone-200 text-[10px] uppercase tracking-wider font-black border-b border-stone-800">
                     <th className="py-3 px-4">Zona de Cobertura</th>
-                    <th className="py-3 px-4">Tarifa Envío</th>
-                    <th className="py-3 px-4">Tiempo Tránsito</th>
+                    <th className="py-3 px-4">Tarifa de Envío</th>
+                    <th className="py-3 px-4">T. de Tránsito</th>
                     <th className="py-3 px-4">Courier Asignado</th>
                     <th className="py-3 px-4 text-right">Acciones</th>
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-slate-100 text-xs text-slate-600">
+                <tbody className="divide-y divide-stone-100 text-xs text-stone-700">
                   {currentZones.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="py-8 text-center text-slate-400">
-                        No hay zonas configuradas para esta provincia todavía.
+                      <td colSpan={5} className="py-12 text-center text-stone-400">
+                        No hay zonas registradas para esta provincia todavía.
                       </td>
                     </tr>
                   ) : (
                     currentZones.map((z) => (
-                      <tr key={z.id} className="hover:bg-slate-50/80 transition-colors group">
-                        <td className="py-3.5 px-4 font-bold text-slate-900">
+                      <tr key={z.id} className="hover:bg-amber-50/20 transition-colors group">
+                        <td className="py-3.5 px-4 font-bold text-stone-900">
                           {z.name}
                         </td>
-                        <td className="py-3.5 px-4 font-bold text-blue-600">
+                        <td className="py-3.5 px-4 font-black text-amber-600 text-sm">
                           S/ {z.shippingFee.toFixed(2)}
                         </td>
-                        <td className="py-3.5 px-4 text-slate-600">
+                        <td className="py-3.5 px-4 text-stone-600">
                           <span className="flex items-center space-x-1">
-                            <Clock className="w-3 h-3 text-slate-400" />
+                            <Clock className="w-3.5 h-3.5 text-stone-400" />
                             <span>{z.estimatedDays}</span>
                           </span>
                         </td>
-                        <td className="py-3.5 px-4 text-slate-600">
+                        <td className="py-3.5 px-4 text-stone-600">
                           <span className="flex items-center space-x-1">
-                            <Truck className="w-3 h-3 text-slate-400" />
-                            <span>{z.courierAssigned}</span>
+                            <Truck className="w-3.5 h-3.5 text-stone-400" />
+                            <span className="font-medium">{z.courierAssigned}</span>
                           </span>
                         </td>
                         <td className="py-3.5 px-4 text-right">
-                          <div className="flex items-center justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="flex items-center justify-end space-x-1.5">
                             <button
                               onClick={() => handleEditZonePrice(z)}
-                              className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded"
-                              title="Editar Tarifa"
+                              className="p-1.5 text-stone-500 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer"
+                              title="Editar Tarifa en Soles"
                             >
                               <Edit2 className="w-3.5 h-3.5" />
                             </button>
                             <button
                               onClick={() => handleDeleteZoneClick(z)}
-                              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded"
+                              className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                               title="Eliminar Zona"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -229,28 +270,34 @@ export const ShippingZonesModule: React.FC<ShippingZonesModuleProps> = ({
 
         {/* Right Col: District Mapping & Add District */}
         <div className="space-y-4">
-          <div className="bg-white border border-slate-200 p-4 rounded-xl shadow-xs space-y-4">
-            <h3 className="text-xs font-bold text-blue-600 uppercase tracking-wider flex items-center space-x-1.5">
-              <MapPin className="w-4 h-4" />
-              <span>Distritos en {currentProvince?.name} ({currentDistricts.length})</span>
+          <div className="bg-white border border-stone-200/80 p-5 rounded-2xl shadow-xs space-y-4">
+            <h3 className="text-xs font-black text-stone-900 uppercase tracking-wider flex items-center justify-between">
+              <span className="flex items-center space-x-1.5">
+                <MapPin className="w-4 h-4 text-amber-500" />
+                <span>Distritos en {currentProvince?.name}</span>
+              </span>
+              <span className="text-[10px] bg-stone-100 text-stone-700 px-2 py-0.5 rounded-full font-bold">
+                {currentDistricts.length} mapeados
+              </span>
             </h3>
 
             {/* Districts List Tags */}
-            <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+            <div className="grid grid-cols-2 gap-2 max-h-52 overflow-y-auto pr-1">
               {currentDistricts.map((d) => {
                 const zObj = zones.find((z) => z.id === d.zoneId);
                 return (
                   <div
                     key={d.id}
-                    className="flex flex-col bg-slate-50 border border-slate-200 rounded-lg p-2 text-[11px] group relative pr-6"
+                    className="flex flex-col bg-stone-50 border border-stone-200/80 rounded-xl p-2.5 text-[11px] group relative pr-7"
                   >
-                    <span className="font-bold text-slate-800">{d.name}</span>
-                    <span className="text-slate-500 truncate w-24" title={zObj?.name}>
+                    <span className="font-bold text-stone-900 truncate">{d.name}</span>
+                    <span className="text-stone-500 text-[10px] truncate" title={zObj?.name}>
                       {zObj?.name || 'Sin Zona'}
                     </span>
                     <button
                       onClick={() => handleDeleteDistrictClick(d)}
-                      className="absolute right-1.5 top-1.5 p-1 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute right-2 top-2 p-1 text-stone-300 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                      title="Eliminar mapeo de distrito"
                     >
                       <Trash2 className="w-3 h-3" />
                     </button>
@@ -258,14 +305,16 @@ export const ShippingZonesModule: React.FC<ShippingZonesModuleProps> = ({
                 );
               })}
               {currentDistricts.length === 0 && (
-                <span className="text-xs text-slate-400">Sin distritos registrados.</span>
+                <span className="text-xs text-stone-400 col-span-2 py-4 text-center">
+                  Sin distritos registrados para esta región.
+                </span>
               )}
             </div>
 
             {/* Add District Form */}
-            <div className="pt-4 border-t border-slate-100">
+            <div className="pt-4 border-t border-stone-100">
               <form onSubmit={handleCreateDistrict} className="space-y-3">
-                <h4 className="text-[11px] font-bold text-slate-900 uppercase tracking-wider">
+                <h4 className="text-[11px] font-bold text-stone-900 uppercase tracking-wider">
                   Mapear Nuevo Distrito
                 </h4>
                 
@@ -275,8 +324,8 @@ export const ShippingZonesModule: React.FC<ShippingZonesModuleProps> = ({
                     required
                     value={newDistName}
                     onChange={(e) => setNewDistName(e.target.value)}
-                    placeholder="Ej. Miraflores, Yanahuara..."
-                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
+                    placeholder="Ej. Miraflores, San Isidro, Yanahuara..."
+                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-xs text-stone-900 focus:outline-none focus:border-stone-900 placeholder-stone-400"
                   />
                 </div>
 
@@ -285,7 +334,7 @@ export const ShippingZonesModule: React.FC<ShippingZonesModuleProps> = ({
                     required
                     value={newDistZoneId}
                     onChange={(e) => setNewDistZoneId(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
+                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-xs text-stone-900 focus:outline-none focus:border-stone-900 cursor-pointer font-medium"
                   >
                     <option value="" disabled>Selecciona la Zona Correspondiente</option>
                     {currentZones.map((z) => (
@@ -299,7 +348,7 @@ export const ShippingZonesModule: React.FC<ShippingZonesModuleProps> = ({
                 <button
                   type="submit"
                   disabled={isAddingDist || currentZones.length === 0}
-                  className="w-full flex items-center justify-center space-x-2 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white text-xs font-semibold py-2 rounded-lg transition-colors"
+                  className="w-full flex items-center justify-center space-x-2 bg-stone-950 hover:bg-stone-800 disabled:bg-stone-200 disabled:text-stone-400 text-amber-300 text-xs font-bold py-2.5 rounded-xl transition-all cursor-pointer active:scale-95"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Agregar Distrito a {currentProvince?.name}</span>

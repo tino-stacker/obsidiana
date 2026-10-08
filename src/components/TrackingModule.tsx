@@ -5,10 +5,20 @@ import {
   Check, 
   Clock, 
   Package, 
+  Truck,
+  CheckCircle2,
   ChevronRight,
-  AlertCircle
+  AlertCircle,
+  Copy,
+  ExternalLink,
+  MessageCircle,
+  Sparkles,
+  ShieldCheck,
+  Calendar,
+  Gem,
+  Building2
 } from 'lucide-react';
-import { Order } from '../types';
+import { Order, OrderStatus } from '../types';
 
 interface TrackingModuleProps {
   orders: Order[];
@@ -24,6 +34,7 @@ export const TrackingModule: React.FC<TrackingModuleProps> = ({
     orders.find((o) => o.trackingCode.toUpperCase() === trackingCodeInput.toUpperCase()) || orders[0] || null
   );
   const [errorMsg, setErrorMsg] = useState('');
+  const [copied, setCopied] = useState(false);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,43 +51,108 @@ export const TrackingModule: React.FC<TrackingModuleProps> = ({
       setFoundOrder(match);
     } else {
       setFoundOrder(null);
-      setErrorMsg(`No se encontró ningún pedido con el código "${query}". Verifica el número ingresado.`);
+      setErrorMsg(`No se encontró ningún pedido con el identificador "${query}". Verifica el código ingresado.`);
     }
   };
 
+  const handleCopyCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleShareWhatsApp = (order: Order) => {
+    const phone = (order.customer.phone || '').replace(/\D/g, '');
+    const cleanPhone = phone.startsWith('51') ? phone : `51${phone}`;
+    const trackingLink = `${window.location.origin}/#rubenasmat`;
+    const text = encodeURIComponent(
+      `¡Hola ${order.customer.name}! ✨ Te compartimos la información de seguimiento de tu joya en Obsidiana Joyería:\n\n` +
+      `📦 Pedido: ${order.orderNumber}\n` +
+      `🔍 Código de Rastreo: ${order.trackingCode}\n` +
+      `📍 Estado: ${order.status.toUpperCase()}\n` +
+      `🚚 Destino: ${order.customer.district || 'Lima'}, ${order.customer.province || 'Lima'}\n\n` +
+      `Cualquier consulta estamos atentos por este medio.`
+    );
+    window.open(`https://wa.me/${cleanPhone}?text=${text}`, '_blank');
+  };
+
+  // Determine stage progress (1 to 5)
+  const getStageIndex = (status: OrderStatus) => {
+    switch (status) {
+      case 'pendiente': return 1;
+      case 'en_preparacion': return 2;
+      case 'en_ruta': return 3;
+      case 'entregado': return 4;
+      case 'cancelado': return -1;
+      default: return 1;
+    }
+  };
+
+  const currentStage = foundOrder ? getStageIndex(foundOrder.status) : 1;
+
+  const stages = [
+    {
+      title: 'Orden Registrada',
+      description: 'Pago recibido y orden validada en sistema.',
+      icon: CheckCircle2,
+    },
+    {
+      title: 'Taller & Empaque de Lujo',
+      description: 'Inspección de plata 925/950, estuche rígido y certificado de garantía.',
+      icon: Sparkles,
+    },
+    {
+      title: 'Despachado en Ruta',
+      description: 'Entregado a motorizado express o con guía Shalom/Olva.',
+      icon: Truck,
+    },
+    {
+      title: 'Entregado Conforme',
+      description: 'Joya entregada en manos del cliente o agencia de destino.',
+      icon: ShieldCheck,
+    },
+  ];
+
   return (
-    <div className="space-y-12 max-w-4xl mx-auto px-4 py-8 font-sans">
+    <div className="space-y-8 max-w-5xl mx-auto font-sans">
       
-      {/* Header Banner - Minimalist */}
-      <div className="text-center space-y-6">
-        <h1 className="text-2xl font-light tracking-widest text-zinc-900 uppercase">Seguimiento de Envío</h1>
-        <p className="text-sm text-zinc-500 font-light max-w-md mx-auto">
-          Ingresa tu número de rastreo para conocer el estado actualizado de tu joya.
+      {/* Header Banner */}
+      <div className="bg-white p-6 sm:p-8 rounded-2xl border border-stone-200/80 shadow-xs text-center space-y-4">
+        <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-800 text-[11px] font-bold">
+          <Truck className="w-3.5 h-3.5 text-amber-600" />
+          <span>PORTAL DE TRAZABILIDAD EN TIEMPO REAL</span>
+        </div>
+        <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight uppercase">
+          Rastreo de Pedidos & Envíos
+        </h1>
+        <p className="text-xs sm:text-sm text-stone-500 max-w-xl mx-auto font-light">
+          Monitorea el trayecto y la preparación de cada joya desde nuestro taller hasta el destino final en Lima o agencias Shalom en provincia.
         </p>
 
-        {/* Search Form */}
-        <form onSubmit={handleSearch} className="max-w-md mx-auto mt-8 flex flex-col gap-4">
-          <div className="relative">
+        {/* Search Input Form */}
+        <form onSubmit={handleSearch} className="max-w-lg mx-auto pt-2 flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={trackingCodeInput}
               onChange={(e) => setTrackingCodeInput(e.target.value)}
-              placeholder="N° DE RASTREO O PEDIDO"
-              className="w-full bg-transparent border-b border-zinc-300 px-4 py-3 text-sm text-center text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900 focus:ring-0 font-mono tracking-widest uppercase transition-colors"
+              placeholder="Ingresa N° de Rastreo (TRK-...) o Pedido (NV-...)"
+              className="w-full bg-stone-50 border border-stone-200 pl-10 pr-4 py-3 text-xs sm:text-sm text-stone-900 rounded-xl focus:outline-none focus:border-stone-900 font-mono tracking-wider uppercase placeholder-stone-400"
             />
           </div>
           <button
             type="submit"
-            className="bg-zinc-900 hover:bg-zinc-800 text-white uppercase tracking-widest text-xs py-4 px-8 w-full transition-colors flex items-center justify-center gap-2"
+            className="bg-stone-950 hover:bg-stone-800 text-amber-300 font-bold text-xs uppercase tracking-wider py-3 px-6 rounded-xl transition-all cursor-pointer shadow-md shadow-stone-950/10 active:scale-95"
           >
-            <span>Buscar Pedido</span>
-            <Search className="w-3.5 h-3.5" />
+            Buscar
           </button>
         </form>
 
-        {/* Demo codes */}
-        <div className="pt-4 flex flex-wrap items-center justify-center gap-3">
-          {orders.slice(0, 3).map((o) => (
+        {/* Quick Click Order Chips */}
+        <div className="pt-2 flex flex-wrap items-center justify-center gap-2">
+          <span className="text-[11px] text-stone-400">Recientes:</span>
+          {orders.slice(0, 4).map((o) => (
             <button
               key={o.id}
               onClick={() => {
@@ -84,7 +160,14 @@ export const TrackingModule: React.FC<TrackingModuleProps> = ({
                 setFoundOrder(o);
                 setErrorMsg('');
               }}
-              className="text-xs text-zinc-400 hover:text-zinc-900 font-mono tracking-wider transition-colors border-b border-transparent hover:border-zinc-900 pb-0.5"
+              className={`
+                px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer border
+                ${
+                  foundOrder?.id === o.id
+                    ? 'bg-amber-400 text-stone-950 border-amber-400'
+                    : 'bg-stone-50 text-stone-600 hover:text-stone-900 border-stone-200'
+                }
+              `}
             >
               {o.trackingCode}
             </button>
@@ -93,135 +176,157 @@ export const TrackingModule: React.FC<TrackingModuleProps> = ({
       </div>
 
       {errorMsg && (
-        <div className="p-4 bg-red-50 text-red-800 text-sm flex items-center justify-center space-x-2">
-          <AlertCircle className="w-4 h-4" />
-          <span className="font-light">{errorMsg}</span>
+        <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs flex items-center justify-center space-x-2">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>{errorMsg}</span>
         </div>
       )}
 
-      {/* Result View */}
+      {/* Tracking Result View */}
       {foundOrder && (
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <div className="bg-white border border-zinc-100 p-8 md:p-12 space-y-12">
-            
-            {/* Summary Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 pb-8 border-b border-zinc-100">
-              <div className="space-y-1">
-                <span className="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">Orden Confirmada</span>
-                <h2 className="text-2xl font-mono tracking-wider text-zinc-900">
-                  {foundOrder.trackingCode}
-                </h2>
-                <p className="text-sm text-zinc-500 font-light">
-                  Destino: {foundOrder.customer.district}, {foundOrder.customer.province}
-                </p>
+        <div className="space-y-6">
+          
+          {/* Main Status Header Card */}
+          <div className="bg-white p-6 sm:p-8 rounded-2xl border border-stone-200/80 shadow-xs space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-stone-100">
+              <div>
+                <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">
+                  PEDIDO ASOCIADO
+                </span>
+                <div className="flex items-center space-x-3 mt-1">
+                  <h2 className="text-xl sm:text-2xl font-black text-stone-900">
+                    {foundOrder.orderNumber}
+                  </h2>
+                  <span className="font-mono text-xs font-bold bg-stone-100 text-stone-700 px-2 py-0.5 rounded border border-stone-200">
+                    {foundOrder.trackingCode}
+                  </span>
+                  <button
+                    onClick={() => handleCopyCode(foundOrder.trackingCode)}
+                    title="Copiar código"
+                    className="text-stone-400 hover:text-stone-900 transition-colors cursor-pointer"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                  </button>
+                  {copied && <span className="text-[10px] text-emerald-600 font-bold">¡Copiado!</span>}
+                </div>
               </div>
 
-              <div className="text-left md:text-right space-y-2">
-                <p className="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">Entrega Estimada</p>
-                <div className="flex items-center md:justify-end gap-2 text-zinc-900">
-                  <Clock className="w-4 h-4 text-zinc-400" />
-                  <span className="text-sm font-medium tracking-wide">{foundOrder.estimatedDelivery}</span>
-                </div>
-                <div className="inline-block px-3 py-1 bg-zinc-100 text-zinc-800 text-xs tracking-wider uppercase mt-2">
-                  {foundOrder.status.replace('_', ' ')}
-                </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => handleShareWhatsApp(foundOrder)}
+                  className="flex items-center space-x-1.5 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer active:scale-95"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Compartir por WhatsApp</span>
+                </button>
               </div>
             </div>
 
-            {/* Vertical Timeline */}
+            {/* Visual Stepper Timeline */}
             <div className="py-4">
-              <h3 className="text-xs uppercase tracking-widest text-zinc-400 font-semibold mb-8">Historial de Envío</h3>
-              <div className="relative space-y-8 before:absolute before:inset-0 before:ml-[11px] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-px before:bg-zinc-200">
-                {foundOrder.timeline.map((step, index) => {
-                  const isCompleted = step.completed;
-                  const isLastCompleted = isCompleted && (!foundOrder.timeline[index + 1] || !foundOrder.timeline[index + 1].completed);
-                  
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 relative">
+                {stages.map((stage, idx) => {
+                  const isCompleted = currentStage > idx;
+                  const isCurrent = currentStage === idx;
+                  const Icon = stage.icon;
+
                   return (
-                    <div key={index} className="relative flex items-start md:justify-center">
-                      {/* Left Side (Desktop) */}
-                      <div className="hidden md:block w-1/2 pr-8 text-right">
-                        {step.timestamp && isCompleted ? (
-                          <div className="text-xs text-zinc-500 mt-1">
-                            <span className="block font-medium text-zinc-900">{new Date(step.timestamp).toLocaleDateString('es-PE')}</span>
-                            <span className="font-mono">{new Date(step.timestamp).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}</span>
-                          </div>
-                        ) : (
-                          <div className="text-xs text-zinc-400 mt-1 uppercase tracking-widest">Pendiente</div>
-                        )}
-                      </div>
-
-                      {/* Icon Center */}
-                      <div className="relative flex items-center justify-center shrink-0">
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center border-2 bg-white z-10 transition-colors duration-500 ${
-                          isCompleted ? 'border-zinc-900 text-zinc-900' : 'border-zinc-200 text-transparent'
+                    <div
+                      key={idx}
+                      className={`
+                        p-4 rounded-xl border transition-all relative
+                        ${
+                          isCompleted
+                            ? 'bg-emerald-50/40 border-emerald-300 text-stone-900'
+                            : isCurrent
+                            ? 'bg-amber-50/50 border-amber-400 ring-2 ring-amber-400/20 text-stone-900'
+                            : 'bg-stone-50/50 border-stone-200 text-stone-400'
+                        }
+                      `}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black ${
+                          isCompleted
+                            ? 'bg-emerald-600 text-white'
+                            : isCurrent
+                            ? 'bg-amber-500 text-stone-950 font-black'
+                            : 'bg-stone-200 text-stone-500'
                         }`}>
-                          {isCompleted && <Check className="w-3 h-3" strokeWidth={3} />}
-                        </div>
-                        {isLastCompleted && (
-                          <span className="absolute w-6 h-6 rounded-full border border-zinc-900 animate-ping opacity-20"></span>
-                        )}
+                          {isCompleted ? <Check className="w-4 h-4" /> : idx + 1}
+                        </span>
+                        <Icon className={`w-4 h-4 ${isCompleted ? 'text-emerald-600' : isCurrent ? 'text-amber-600' : 'text-stone-300'}`} />
                       </div>
-
-                      {/* Right Side / Content */}
-                      <div className="w-full md:w-1/2 pl-6 md:pl-8">
-                        <h4 className={`text-sm font-medium tracking-wide ${isCompleted ? 'text-zinc-900' : 'text-zinc-400'}`}>
-                          {step.title}
-                        </h4>
-                        <p className={`text-xs mt-1.5 leading-relaxed font-light ${isCompleted ? 'text-zinc-600' : 'text-zinc-400'}`}>
-                          {step.description}
-                        </p>
-                        
-                        {/* Mobile timestamp */}
-                        <div className="md:hidden mt-2">
-                           {step.timestamp && isCompleted && (
-                             <span className="text-[10px] text-zinc-400 font-mono">
-                               {new Date(step.timestamp).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' })}
-                             </span>
-                           )}
-                        </div>
-                      </div>
+                      <h4 className="text-xs font-black mb-1">{stage.title}</h4>
+                      <p className="text-[11px] leading-relaxed opacity-80">{stage.description}</p>
                     </div>
                   );
                 })}
               </div>
             </div>
 
-            {/* Extra Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-zinc-100">
+            {/* Destination & Order Details Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-stone-100">
               
-              <div>
-                <h3 className="text-xs uppercase tracking-widest text-zinc-400 font-semibold mb-4 flex items-center gap-2">
-                  <MapPin className="w-3.5 h-3.5" /> Detalle de Entrega
-                </h3>
-                <div className="space-y-2 text-sm font-light text-zinc-600">
-                  <p><span className="font-medium text-zinc-900">Recibe:</span> {foundOrder.customer.name}</p>
-                  <p><span className="font-medium text-zinc-900">Dirección:</span> {foundOrder.customer.address}</p>
-                  {foundOrder.courier?.driverName && (
-                    <p className="pt-2"><span className="font-medium text-zinc-900">Transporte:</span> {foundOrder.courier.driverName} ({foundOrder.courier.vehicle})</p>
-                  )}
-                </div>
+              {/* Client Info */}
+              <div className="space-y-2">
+                <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">
+                  DESTINATARIO
+                </span>
+                <p className="text-sm font-black text-stone-900">{foundOrder.customer.name}</p>
+                <p className="text-xs text-stone-500 flex items-center space-x-1">
+                  <span>📱 {foundOrder.customer.phone || 'Sin teléfono'}</span>
+                </p>
+                <p className="text-xs text-stone-500 truncate">
+                  ✉️ {foundOrder.customer.email || 'Sin correo'}
+                </p>
               </div>
 
-              <div>
-                <h3 className="text-xs uppercase tracking-widest text-zinc-400 font-semibold mb-4 flex items-center gap-2">
-                  <Package className="w-3.5 h-3.5" /> Artículos
-                </h3>
-                <ul className="space-y-3">
-                  {foundOrder.items.map((i, idx) => (
-                    <li key={idx} className="flex justify-between items-center text-sm">
-                      <span className="font-light text-zinc-600 flex items-center gap-2">
-                        <ChevronRight className="w-3 h-3 text-zinc-300" />
-                        {i.productName} <span className="text-zinc-400 text-xs">x{i.quantity}</span>
+              {/* Delivery Address */}
+              <div className="space-y-2">
+                <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">
+                  DIRECCIÓN DE ENTREGA
+                </span>
+                <p className="text-xs font-bold text-stone-800 flex items-start space-x-1.5">
+                  <MapPin className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                  <span>
+                    {foundOrder.customer.address || 'Recojo en Agencia'}
+                  </span>
+                </p>
+                <p className="text-xs text-stone-500">
+                  {foundOrder.customer.district || 'Lima'}, {foundOrder.customer.province || 'Lima'}
+                </p>
+                <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-stone-100 text-stone-700">
+                  Zona: {foundOrder.customer.zone || 'Express'}
+                </span>
+              </div>
+
+              {/* Joyas Incluidas */}
+              <div className="space-y-2">
+                <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">
+                  RESUMEN DE JOYAS ({foundOrder.items.length})
+                </span>
+                <div className="space-y-1.5 max-h-28 overflow-y-auto pr-1">
+                  {foundOrder.items.map((item, idx) => (
+                    <div key={idx} className="flex items-center justify-between text-xs py-1 border-b border-stone-50">
+                      <span className="font-medium text-stone-800 truncate max-w-[160px]">
+                        {item.quantity}x {item.productName}
                       </span>
-                      <span className="font-mono text-xs text-zinc-400">{i.sku}</span>
-                    </li>
+                      <span className="font-black text-stone-900">
+                        S/ {item.total.toFixed(2)}
+                      </span>
+                    </div>
                   ))}
-                </ul>
+                </div>
+                <div className="flex items-center justify-between pt-1 font-black text-xs text-stone-900">
+                  <span>Total Pedido:</span>
+                  <span className="text-sm text-amber-600">S/ {foundOrder.total.toFixed(2)}</span>
+                </div>
               </div>
 
             </div>
 
           </div>
+
         </div>
       )}
 

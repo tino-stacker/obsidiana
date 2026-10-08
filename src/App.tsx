@@ -5,15 +5,24 @@ import { PosModule } from './components/PosModule';
 import { OrderRegistrationModal } from './components/OrderRegistrationModal';
 import { OrderDetailModal } from './components/OrderDetailModal';
 import { InventoryModule } from './components/InventoryModule';
-import { PublicCatalog } from './components/PublicCatalog';
 import { AddProductModal } from './components/AddProductModal';
 import { StockMovementModal } from './components/StockMovementModal';
-import { ShippingZonesModule } from './components/ShippingZonesModule';
 import { AddZoneModal } from './components/AddZoneModal';
-import { TrackingModule } from './components/TrackingModule';
-import { ReportsModule } from './components/ReportsModule';
-import { EmailNotificationsModule } from './components/EmailNotificationsModule';
-import { ClientsModule } from './components/ClientsModule';
+
+// Lazy loaded heavy modules for bundle splitting & performance
+const PublicCatalog = React.lazy(() => import('./components/PublicCatalog').then(m => ({ default: m.PublicCatalog })));
+const ShippingZonesModule = React.lazy(() => import('./components/ShippingZonesModule').then(m => ({ default: m.ShippingZonesModule })));
+const TrackingModule = React.lazy(() => import('./components/TrackingModule').then(m => ({ default: m.TrackingModule })));
+const ReportsModule = React.lazy(() => import('./components/ReportsModule').then(m => ({ default: m.ReportsModule })));
+const EmailNotificationsModule = React.lazy(() => import('./components/EmailNotificationsModule').then(m => ({ default: m.EmailNotificationsModule })));
+const ClientsModule = React.lazy(() => import('./components/ClientsModule').then(m => ({ default: m.ClientsModule })));
+
+const ModuleLoadingSpinner = () => (
+  <div className="flex items-center justify-center p-16">
+    <div className="w-6 h-6 border-2 border-zinc-900 border-t-transparent rounded-full animate-spin" />
+    <span className="ml-3 text-xs font-semibold text-zinc-600">Cargando módulo...</span>
+  </div>
+);
 import { 
   Product, 
   Province, 
@@ -34,132 +43,12 @@ import {
   INITIAL_EMAIL_LOGS,
 } from './data/mockData';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
-import { supabase } from './lib/supabase';
 import { productosService, pedidosService, configService, clientesService } from './lib/services';
 import { zonasService } from './lib/zonasService';
 
-// ─── Helper: genera el HTML de la Nota de Venta (diseño premium) ─────────────
-function buildOrderEmailHtml(orderData: any): string {
-  const now = new Date();
-  const fecha = now.toLocaleDateString('es-PE', { year: 'numeric', month: 'long', day: 'numeric' });
-
-  const items = (orderData.items || []).map((item: any) => `
-    <tr>
-      <td style="padding:14px 12px;border-bottom:1px solid #f0ede9;font-size:14px;color:#181716;">${item.quantity}x</td>
-      <td style="padding:14px 12px;border-bottom:1px solid #f0ede9;font-size:14px;color:#181716;">${item.productName}</td>
-      <td style="padding:14px 12px;border-bottom:1px solid #f0ede9;font-size:14px;color:#181716;text-align:right;white-space:nowrap;">S/ ${(Number(item.unitPrice) * Number(item.quantity)).toFixed(2)}</td>
-    </tr>
-  `).join('');
-
-  return `<!DOCTYPE html>
-  <html lang="es">
-  <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"></head>
-  <body style="margin:0;padding:0;background:#f4f1ee;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f1ee;padding:40px 0;">
-      <tr><td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
-
-          <!-- HEADER -->
-          <tr>
-            <td style="background:#181716;padding:36px 40px;text-align:center;">
-              <p style="margin:0;font-size:11px;letter-spacing:4px;text-transform:uppercase;color:#A59B8F;">Obsidiana</p>
-              <p style="margin:6px 0 0;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#5a5248;">Plata &amp; Joyería</p>
-            </td>
-          </tr>
-
-          <!-- TÍTULO -->
-          <tr>
-            <td style="background:#ffffff;padding:32px 40px 24px;border-left:1px solid #e8e3de;border-right:1px solid #e8e3de;">
-              <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#A59B8F;">NOTA DE VENTA</p>
-              <h1 style="margin:8px 0 4px;font-size:28px;font-weight:300;color:#181716;letter-spacing:-0.5px;">¡Gracias por tu compra!</h1>
-              <p style="margin:0;font-size:13px;color:#A59B8F;">${fecha} · Pedido <strong style="color:#61564A;">#${orderData.orderNumber}</strong></p>
-            </td>
-          </tr>
-
-          <!-- INFO CLIENTE -->
-          <tr>
-            <td style="background:#faf8f6;padding:20px 40px;border-left:1px solid #e8e3de;border-right:1px solid #e8e3de;border-top:1px solid #ede9e4;">
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td style="width:50%;padding-right:12px;">
-                    <p style="margin:0 0 2px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#A59B8F;">Cliente</p>
-                    <p style="margin:0;font-size:14px;color:#181716;font-weight:600;">${orderData.customer?.name || ''}</p>
-                    <p style="margin:2px 0 0;font-size:12px;color:#A59B8F;">${orderData.customer?.email || ''}</p>
-                  </td>
-                  <td style="width:50%;padding-left:12px;">
-                    <p style="margin:0 0 2px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#A59B8F;">Envío a</p>
-                    <p style="margin:0;font-size:14px;color:#181716;">${orderData.customer?.address || ''}</p>
-                    <p style="margin:2px 0 0;font-size:12px;color:#A59B8F;">${orderData.customer?.district || ''}, ${orderData.customer?.province || ''}</p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- PRODUCTOS -->
-          <tr>
-            <td style="background:#ffffff;padding:0 40px;border-left:1px solid #e8e3de;border-right:1px solid #e8e3de;">
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <thead>
-                  <tr style="border-bottom:2px solid #181716;">
-                    <th style="padding:16px 12px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#A59B8F;text-align:left;">Cant</th>
-                    <th style="padding:16px 12px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#A59B8F;text-align:left;">Producto</th>
-                    <th style="padding:16px 12px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#A59B8F;text-align:right;">Importe</th>
-                  </tr>
-                </thead>
-                <tbody>${items}</tbody>
-              </table>
-            </td>
-          </tr>
-
-          <!-- TOTALES -->
-          <tr>
-            <td style="background:#ffffff;padding:0 40px 28px;border-left:1px solid #e8e3de;border-right:1px solid #e8e3de;">
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td style="border-top:1px solid #ede9e4;padding:12px 12px 4px;text-align:right;">
-                    <span style="font-size:12px;color:#A59B8F;">Subtotal</span>
-                    <span style="font-size:12px;color:#61564A;margin-left:32px;">S/ ${Number(orderData.subtotal).toFixed(2)}</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:4px 12px;text-align:right;">
-                    <span style="font-size:12px;color:#A59B8F;">Costo de envío</span>
-                    <span style="font-size:12px;color:#61564A;margin-left:32px;">S/ ${Number(orderData.shippingFee).toFixed(2)}</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:12px 12px 0;border-top:2px solid #181716;text-align:right;margin-top:8px;">
-                    <span style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#181716;">Total</span>
-                    <span style="font-size:20px;font-weight:700;color:#181716;margin-left:32px;">S/ ${Number(orderData.total).toFixed(2)}</span>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- TRACKING -->
-          <tr>
-            <td style="background:#181716;padding:28px 40px;text-align:center;">
-              <p style="margin:0 0 10px;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#5a5248;">Tu código de seguimiento</p>
-              <p style="margin:0;font-size:26px;font-weight:700;letter-spacing:4px;color:#ffffff;">${orderData.trackingCode}</p>
-            </td>
-          </tr>
-
-          <!-- FOOTER -->
-          <tr>
-            <td style="background:#faf8f6;padding:24px 40px;text-align:center;border:1px solid #e8e3de;border-top:none;">
-              <p style="margin:0;font-size:12px;color:#A59B8F;line-height:1.7;">¿Tienes alguna pregunta sobre tu pedido? Responde directamente a este correo.<br>
-              <strong style="color:#61564A;">reservaszurzam@gmail.com</strong></p>
-            </td>
-          </tr>
-
-        </table>
-      </td></tr>
-    </table>
-  </body>
-  </html>`;
-}
+import { buildOrderEmailHtml } from './modules/notifications/templates/orderEmailHtml';
+import { LoginScreen } from './modules/auth/components/LoginScreen';
+import { Toast } from './components/Toast';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'orders' | 'pos' | 'inventory' | 'shipping' | 'tracking' | 'reports' | 'emails' | 'clients'>('pos');
@@ -180,7 +69,14 @@ export default function App() {
 
   // Nuevo estado para catálogo público
   const [isAdminRoute, setIsAdminRoute] = useState(() => window.location.hash === '#rubenasmat');
-  const [session, setSession] = useState<any>(null);
+  const [session, setSession] = useState<any>(() => {
+    try {
+      const saved = localStorage.getItem('obs_admin_session');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
   const [authError, setAuthError] = useState('');
@@ -280,7 +176,7 @@ export default function App() {
       setZones(zons.length > 0 ? zons : INITIAL_ZONES);
       setDistricts(dists.length > 0 ? dists : INITIAL_DISTRICTS);
 
-      // Si Supabase devuelve productos, úsalos; si no, usa mockData como fallback
+      // Productos cargados localmente (persistencia en localStorage o mockData)
       setProducts(mappedProducts.length > 0 ? mappedProducts : INITIAL_PRODUCTS);
       setOrders(mappedOrders);
 
@@ -289,8 +185,8 @@ export default function App() {
       setEmailLogs([]);
 
     } catch (err) {
-      console.error('Error cargando datos desde Supabase, usando datos locales:', err);
-      // Fallback completo a mockData si Supabase falla
+      console.error('Error cargando datos locales:', err);
+      // Fallback completo a mockData si ocurre un error
       setProducts(INITIAL_PRODUCTS);
       setProvinces(INITIAL_PROVINCES);
       setZones(INITIAL_ZONES);
@@ -301,17 +197,6 @@ export default function App() {
   useEffect(() => {
     loadInitialData();
 
-    // Check active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
     // Escuchar cambios en el hash de la URL
     const handleHashChange = () => {
       setIsAdminRoute(window.location.hash === '#rubenasmat');
@@ -319,7 +204,6 @@ export default function App() {
     window.addEventListener('hashchange', handleHashChange);
     return () => {
       window.removeEventListener('hashchange', handleHashChange);
-      subscription.unsubscribe();
     };
   }, []);
 
@@ -327,12 +211,36 @@ export default function App() {
     e.preventDefault();
     setAuthLoading(true);
     setAuthError('');
-    const { error } = await supabase.auth.signInWithPassword({
-      email: authEmail,
-      password: authPassword,
-    });
-    if (error) setAuthError('Credenciales incorrectas');
-    setAuthLoading(false);
+    try {
+      const user = authEmail.trim().toLowerCase();
+      const pass = authPassword.trim();
+
+      if (user === 'tino' && pass === '123') {
+        const localSession = {
+          user: {
+            id: 'admin-tino',
+            email: 'tino',
+            user_metadata: { name: 'Tino Admin' },
+          },
+          access_token: 'local-token-tino',
+        };
+        setSession(localSession);
+        localStorage.setItem('obs_admin_session', JSON.stringify(localSession));
+        setAuthError('');
+      } else {
+        setAuthError('Credenciales incorrectas. Usa user: tino / clave: 123');
+      }
+    } catch (err: any) {
+      console.error('Error de autenticación:', err);
+      setAuthError('Error procesando el inicio de sesión.');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('obs_admin_session');
+    setSession(null);
   };
 
 
@@ -384,58 +292,30 @@ export default function App() {
         }))
       });
 
-      // Enviar Nota de Venta via Supabase Edge Function (send-email)
-      // Solo se envía si el admin está autenticado (tiene JWT válido con perfil activo)
-      // Enviar correo en segundo plano (fire-and-forget) — no bloquea la UI
-      if (session?.access_token && orderData.customer?.email) {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        const emailHtml = buildOrderEmailHtml({
-          ...orderData,
-          id: result.id,
-          orderNumber: result.numero_pedido,
-          trackingCode: result.codigo_tracking,
-        });
-        fetch(`${supabaseUrl}/functions/v1/send-email`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-          },
-          body: JSON.stringify({
-            to: orderData.customer.email,
-            subject: `Nota de Venta - Pedido #${result.numero_pedido} - Obsidiana`,
-            html: emailHtml,
-          }),
-        })
-        .then(r => r.ok ? console.log('[send-email] OK →', orderData.customer.email) : r.json().then(e => console.error('[send-email] Error:', e)))
-        .catch(e => console.warn('[send-email] Red:', e));
-      }
-
       showToast(`¡Pedido creado exitosamente!`);
-      loadInitialData(); // Reload from DB to get the new order and updated stock
+      loadInitialData(); // Recargar datos locales con el nuevo pedido y stock actualizado
     } catch (err: any) {
       console.error(err);
-      throw new Error(err.message || 'Error al crear pedido en Supabase');
+      throw new Error(err.message || 'Error al crear pedido');
     }
   };
 
   // 2. Update Order Status
   const handleUpdateOrderStatus = async (orderId: string, status: OrderStatus, note?: string) => {
     try {
-      // 1. Update in Supabase
+      // 1. Update in local orders service
       await pedidosService.updateEstado(orderId, status);
 
       // 2. Prepare mock order data for Express server to send the email
       const targetOrder = orders.find((o) => o.id === orderId);
       const mappedOrder = targetOrder ? {
         id: targetOrder.id,
-        orderNumber: targetOrder.numero_pedido,
-        trackingCode: targetOrder.codigo_tracking,
+        orderNumber: targetOrder.orderNumber || targetOrder.numero_pedido || '',
+        trackingCode: targetOrder.trackingCode || targetOrder.codigo_tracking || '',
         timeline: [], // Express tries to update timeline
         customer: {
-          name: targetOrder.cliente_nombre,
-          email: targetOrder.cliente_email,
+          name: targetOrder.customer?.name || targetOrder.cliente_nombre || '',
+          email: targetOrder.customer?.email || targetOrder.cliente_email || '',
         }
       } : null;
 
@@ -457,9 +337,9 @@ export default function App() {
       }
 
       // 4. Update UI State
-      setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, estado: status } : o)));
+      setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status, estado: status } : o)));
       if (selectedOrder && selectedOrder.id === orderId) {
-        setSelectedOrder({ ...selectedOrder, estado: status });
+        setSelectedOrder({ ...selectedOrder, status, estado: status });
       }
 
       showToast(`Estado de pedido actualizado a "${status.toUpperCase()}". Correo enviado al cliente.`);
@@ -643,7 +523,7 @@ export default function App() {
       loadInitialData();
     } catch (err: any) {
       console.error(err);
-      throw new Error(err.message || 'Error al agregar producto en Supabase');
+      throw new Error(err.message || 'Error al agregar producto');
     }
   };
 
@@ -666,8 +546,8 @@ export default function App() {
       if (type === 'adjustment') newStock = quantity;
 
       await productosService.updateStock(productId, newStock);
-      showToast(`¡Stock actualizado en Supabase para "${product.name}"!`);
-      loadInitialData(); // reload from DB
+      showToast(`¡Stock actualizado para "${product.name}"!`);
+      loadInitialData(); // reload from local data
     } catch (err: any) {
       console.error(err);
       throw new Error(err.message || 'Error al ajustar stock');
@@ -804,64 +684,32 @@ export default function App() {
 
   // Si es la vista pública, renderizar SOLAMENTE el catálogo virtual
   if (!isAdminRoute) {
-    return <PublicCatalog products={products} />;
+    return (
+      <React.Suspense fallback={<ModuleLoadingSpinner />}>
+        <PublicCatalog products={products} />
+      </React.Suspense>
+    );
   }
 
   if (!session) {
     return (
-      <div className="min-h-screen bg-[#FDFCFB] flex items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-2xl shadow-xl max-w-sm w-full border border-slate-100 text-center space-y-6">
-          <div className="w-full flex justify-center mb-4">
-             <img src="/LOGO PRINCIPAL/LOGO PRINCIPAL.png" alt="Logo Obsidiana" className="w-48 sm:w-56 h-auto object-contain mix-blend-multiply" />
-          </div>
-          <div>
-            <h2 className="text-xl font-black tracking-widest text-[#181716]">ACCESO ADMIN</h2>
-            <p className="text-xs text-slate-500 mt-2">Ingresa tus credenciales para continuar.</p>
-          </div>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <input
-              type="email"
-              placeholder="Correo electrónico"
-              value={authEmail}
-              onChange={(e) => setAuthEmail(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-center tracking-widest focus:outline-none focus:border-[#61564A]"
-            />
-            <input
-              type="password"
-              placeholder="Contraseña"
-              value={authPassword}
-              onChange={(e) => setAuthPassword(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-center tracking-widest focus:outline-none focus:border-[#61564A]"
-            />
-            {authError && <p className="text-red-500 text-xs font-bold">{authError}</p>}
-            <button disabled={authLoading} type="submit" className="w-full bg-[#61564A] text-[#E4DFD7] font-bold py-3 rounded-lg uppercase tracking-wider hover:bg-[#181716] transition-colors disabled:opacity-50">
-              {authLoading ? 'Verificando...' : 'Ingresar'}
-            </button>
-          </form>
-          <button onClick={() => { window.location.hash = ''; window.location.reload(); }} className="text-xs text-slate-400 hover:text-[#61564A] underline mt-4">
-            Ir a la Tienda Pública
-          </button>
-        </div>
-      </div>
+      <LoginScreen
+        authEmail={authEmail}
+        setAuthEmail={setAuthEmail}
+        authPassword={authPassword}
+        setAuthPassword={setAuthPassword}
+        authError={authError}
+        authLoading={authLoading}
+        onLogin={handleLogin}
+        onGoToPublic={() => { window.location.hash = ''; window.location.reload(); }}
+      />
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#E4DFD7] text-[#181716] flex flex-col md:flex-row font-sans selection:bg-[#61564A] selection:text-[#E4DFD7]">
-      
+    <div className="min-h-screen bg-stone-100/90 text-stone-900 flex flex-col md:flex-row font-sans selection:bg-stone-900 selection:text-amber-300">
       {/* Toast Notification */}
-      {toast && (
-        <div className="fixed top-6 right-6 z-50 animate-bounce">
-          <div className={`p-4 rounded-xl shadow-xl border flex items-center space-x-3 text-xs font-semibold ${
-            toast.type === 'success'
-              ? 'bg-[#181716] border-[#61564A] text-[#E4DFD7]'
-              : 'bg-red-950 border-red-700 text-red-100'
-          }`}>
-            <CheckCircle2 className="w-5 h-5 text-[#A59B8F] shrink-0" />
-            <span>{toast.message}</span>
-          </div>
-        </div>
-      )}
+      {toast && <Toast message={toast.message} type={toast.type} />}
 
       {/* Side Navigation Bar */}
       <Sidebar
@@ -870,91 +718,122 @@ export default function App() {
         onResetData={handleResetData}
         pendingOrdersCount={pendingOrdersCount}
         lowStockCount={lowStockCount}
+        onLogout={handleLogout}
       />
 
       {/* Main Content Area (Beside Sidebar) */}
       <div className="flex-1 flex flex-col min-w-0 min-h-screen">
         
+        {/* Top Header Bar */}
+        <header className="bg-white border-b border-stone-200/80 px-6 py-3.5 hidden md:flex items-center justify-between sticky top-0 z-20 shadow-xs">
+          <div className="flex items-center space-x-3">
+            <span className="text-[11px] font-bold text-stone-400 uppercase tracking-widest">OBSIDIANA ADMIN</span>
+            <span className="text-stone-300">/</span>
+            <span className="text-xs font-black text-stone-900 tracking-wide uppercase">
+              {activeTab === 'pos' && 'Punto de Venta / POS'}
+              {activeTab === 'orders' && 'Gestión de Pedidos'}
+              {activeTab === 'inventory' && 'Inventario de Joyas'}
+              {activeTab === 'shipping' && 'Zonas & Tarifas de Envío'}
+              {activeTab === 'tracking' && 'Rastreo en Vivo'}
+              {activeTab === 'reports' && 'Reportes & Finanzas'}
+              {activeTab === 'emails' && 'Notificaciones & WhatsApp'}
+              {activeTab === 'clients' && 'Directorio de Clientes'}
+            </span>
+          </div>
+
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Sistema Operativo Local</span>
+            </div>
+            <div className="text-right text-[11px] text-stone-500">
+              <span className="font-semibold text-stone-700">tino (Admin)</span>
+            </div>
+          </div>
+        </header>
+
         {/* Main View Area */}
         <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
-          {activeTab === 'pos' && (
-            <PosModule
-              products={products}
-              provinces={provinces}
-              districts={districts}
-              zones={zones}
-              onSubmitOrder={handleCreateOrder}
-              onSendTestEmail={handleSendTestEmail}
-            />
-          )}
+          <React.Suspense fallback={<ModuleLoadingSpinner />}>
+            {activeTab === 'pos' && (
+              <PosModule
+                products={products}
+                provinces={provinces}
+                districts={districts}
+                zones={zones}
+                onSubmitOrder={handleCreateOrder}
+                onSendTestEmail={handleSendTestEmail}
+              />
+            )}
 
-          {activeTab === 'orders' && (
-            <OrdersList
-              orders={orders}
-              onSelectOrder={(ord) => setSelectedOrder(ord)}
-              onUpdateOrderStatus={handleUpdateOrderStatus}
-              onTrackOrder={handleTrackCodeRedirect}
-              onOpenNewOrder={() => setIsNewOrderOpen(true)}
-              onAutoProcess={handleAutoProcessOrders}
-              onDeleteOrder={handleDeleteOrder}
-              onEditOrder={handleEditOrder}
-              onAnularOrder={handleAnularOrder}
-              provinces={provinces}
-              zones={zones}
-            />
-          )}
+            {activeTab === 'orders' && (
+              <OrdersList
+                orders={orders}
+                onSelectOrder={(ord) => setSelectedOrder(ord)}
+                onUpdateOrderStatus={handleUpdateOrderStatus}
+                onTrackOrder={handleTrackCodeRedirect}
+                onOpenNewOrder={() => setIsNewOrderOpen(true)}
+                onAutoProcess={handleAutoProcessOrders}
+                onDeleteOrder={handleDeleteOrder}
+                onEditOrder={handleEditOrder}
+                onAnularOrder={handleAnularOrder}
+                provinces={provinces}
+                zones={zones}
+              />
+            )}
 
-          {activeTab === 'inventory' && (
-            <InventoryModule
-              products={products}
-              stockMovements={stockMovements}
-              onOpenAddProduct={() => setIsAddProductOpen(true)}
-              onOpenAdjustStock={(p) => setAdjustStockProduct(p)}
-            />
-          )}
+            {activeTab === 'inventory' && (
+              <InventoryModule
+                products={products}
+                stockMovements={stockMovements}
+                onOpenAddProduct={() => setIsAddProductOpen(true)}
+                onOpenAdjustStock={(p) => setAdjustStockProduct(p)}
+              />
+            )}
 
-          {activeTab === 'shipping' && (
-            <ShippingZonesModule
-              provinces={provinces}
-              districts={districts}
-              zones={zones}
-              onOpenAddZone={() => setIsAddZoneOpen(true)}
-              onAddDistrict={handleAddDistrict}
-              onDeleteZone={handleDeleteZone}
-              onUpdateZone={handleUpdateZone}
-              onDeleteDistrict={handleDeleteDistrict}
-            />
-          )}
+            {activeTab === 'shipping' && (
+              <ShippingZonesModule
+                provinces={provinces}
+                districts={districts}
+                zones={zones}
+                onOpenAddZone={() => setIsAddZoneOpen(true)}
+                onAddDistrict={handleAddDistrict}
+                onDeleteZone={handleDeleteZone}
+                onUpdateZone={handleUpdateZone}
+                onDeleteDistrict={handleDeleteDistrict}
+              />
+            )}
 
-          {activeTab === 'tracking' && (
-            <TrackingModule
-              orders={orders}
-              initialSearchCode={trackingCodeForSearch}
-            />
-          )}
+            {activeTab === 'tracking' && (
+              <TrackingModule
+                orders={orders}
+                initialSearchCode={trackingCodeForSearch}
+              />
+            )}
 
-          {activeTab === 'reports' && (
-            <ReportsModule
-              orders={orders}
-              products={products}
-            />
-          )}
+            {activeTab === 'reports' && (
+              <ReportsModule
+                orders={orders}
+                products={products}
+              />
+            )}
 
-          {activeTab === 'emails' && (
-            <EmailNotificationsModule
-              emailLogs={emailLogs}
-              onSendTestEmail={handleSendTestEmail}
-            />
-          )}
+            {activeTab === 'emails' && (
+              <EmailNotificationsModule
+                emailLogs={emailLogs}
+                onSendTestEmail={handleSendTestEmail}
+              />
+            )}
 
-          {activeTab === 'clients' && (
-            <ClientsModule orders={orders} />
-          )}
+            {activeTab === 'clients' && (
+              <ClientsModule orders={orders} />
+            )}
+          </React.Suspense>
         </main>
 
         {/* Footer */}
-        <footer className="border-t border-[#A59B8F]/30 bg-[#E4DFD7] py-4 px-6 text-center text-xs text-[#61564A]">
-          <p>Obsidiana Joyería Perú © 2026 — Catálogo de Joyas en Plata 925/950, Gestión de Pedidos & Envíos.</p>
+        <footer className="border-t border-stone-200/80 bg-white py-4 px-6 text-center text-xs text-stone-500">
+          <p>Obsidiana Joyería Perú © 2026 — Plata Fina 925/950 • Taller & Showroom</p>
         </footer>
       </div>
 
