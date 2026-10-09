@@ -45,28 +45,28 @@ export const StorefrontQuickViewModal: React.FC<StorefrontQuickViewModalProps> =
   const isOutOfStock = product.stock <= 0;
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 md:p-6">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-4 md:p-6">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-[#181716]/60 backdrop-blur-sm transition-opacity duration-300" 
+        className="absolute inset-0 bg-[#181716]/60 backdrop-blur-xs transition-opacity duration-300" 
         onClick={onClose} 
       />
 
       {/* Modal Dialog */}
-      <div className="relative w-full max-w-4xl bg-[#FDFCFB] rounded-sm shadow-2xl border border-[#E4DFD7] overflow-hidden z-10 max-h-[92vh] flex flex-col md:flex-row animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-4xl bg-[#FDFCFB] rounded-xs shadow-2xl border border-[#E4DFD7] overflow-y-auto md:overflow-hidden z-10 max-h-[94vh] flex flex-col md:flex-row animate-in fade-in zoom-in-95 duration-200">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-30 p-2 rounded-full bg-white/80 hover:bg-[#181716] text-[#181716] hover:text-white transition-colors shadow-sm"
+          className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 z-30 p-1.5 sm:p-2 rounded-full bg-white/95 hover:bg-[#181716] text-[#181716] hover:text-white transition-colors shadow-xs cursor-pointer"
           title="Cerrar ventana"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
 
         {/* Left: Image Viewer & Gallery */}
-        <div className="w-full md:w-1/2 bg-white p-6 flex flex-col justify-between items-center border-b md:border-b-0 md:border-r border-[#E7E5E4]">
+        <div className="w-full md:w-1/2 bg-white p-3 sm:p-6 flex flex-col justify-between items-center border-b md:border-b-0 md:border-r border-[#E7E5E4] shrink-0">
           {/* Main Visual Display */}
-          <div className="relative w-full aspect-square max-h-[380px] flex items-center justify-center p-2 bg-white">
+          <div className="relative w-full aspect-square max-h-[220px] sm:max-h-[340px] md:max-h-[380px] flex items-center justify-center p-2 bg-white">
             {currentImage ? (
               <img
                 src={currentImage}
@@ -77,7 +77,7 @@ export const StorefrontQuickViewModal: React.FC<StorefrontQuickViewModalProps> =
               />
             ) : (
               <div className="flex flex-col items-center text-[#A8A29E]">
-                <Diamond className="w-16 h-16 stroke-1" />
+                <Diamond className="w-12 h-12 sm:w-16 sm:h-16 stroke-1" />
                 <span className="text-xs uppercase mt-2">Obsidiana Joyería</span>
               </div>
             )}
@@ -85,11 +85,11 @@ export const StorefrontQuickViewModal: React.FC<StorefrontQuickViewModalProps> =
 
           {/* Alternate Views / Thumbnails */}
           {product.hoverImageUrl && (
-            <div className="flex gap-3 mt-4">
+            <div className="flex gap-2 sm:gap-3 mt-3 sm:mt-4">
               <button
                 type="button"
                 onClick={() => setSelectedImage('main')}
-                className={`w-16 h-16 p-1 border rounded-xs transition-all overflow-hidden bg-white ${
+                className={`w-12 h-12 sm:w-16 sm:h-16 p-1 border rounded-xs transition-all overflow-hidden bg-white ${
                   selectedImage === 'main' 
                     ? 'border-[#1C1917] ring-1 ring-[#1C1917]' 
                     : 'border-[#E7E5E4] opacity-60 hover:opacity-100'
@@ -105,7 +105,7 @@ export const StorefrontQuickViewModal: React.FC<StorefrontQuickViewModalProps> =
               <button
                 type="button"
                 onClick={() => setSelectedImage('hover')}
-                className={`w-16 h-16 p-1 border rounded-xs transition-all overflow-hidden bg-white ${
+                className={`w-12 h-12 sm:w-16 sm:h-16 p-1 border rounded-xs transition-all overflow-hidden bg-white ${
                   selectedImage === 'hover' 
                     ? 'border-[#1C1917] ring-1 ring-[#1C1917]' 
                     : 'border-[#E7E5E4] opacity-60 hover:opacity-100'
@@ -122,7 +122,7 @@ export const StorefrontQuickViewModal: React.FC<StorefrontQuickViewModalProps> =
         </div>
 
         {/* Right: Product Details & Purchase Actions */}
-        <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col justify-between overflow-y-auto">
+        <div className="w-full md:w-1/2 p-4 sm:p-6 md:p-8 flex flex-col justify-between overflow-y-auto">
           <div className="space-y-4">
             {/* Header tags */}
             <div className="flex items-center gap-2">

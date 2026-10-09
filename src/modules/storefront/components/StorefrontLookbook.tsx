@@ -90,8 +90,8 @@ export const StorefrontLookbook: React.FC<StorefrontLookbookProps> = ({
           </p>
         </div>
 
-        {/* 4 Clean Columns of Real Models */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {/* 4 Clean Columns of Real Models — 2 columnas en móvil, 4 en desktop */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
           {LOOKBOOK_ITEMS.map((item) => (
             <div
               key={item.id}
@@ -109,34 +109,34 @@ export const StorefrontLookbook: React.FC<StorefrontLookbookProps> = ({
                     (e.target as HTMLImageElement).src = item.studioImage;
                   }}
                 />
-                <div className="absolute top-3 left-3 bg-white/95 text-[#1C1917] text-[8.5px] font-semibold tracking-wider uppercase px-2 py-0.5 border border-[#E7E5E4]">
+                <div className="absolute top-2 sm:top-3 left-2 sm:left-3 bg-white/95 text-[#1C1917] text-[7px] sm:text-[8.5px] font-semibold tracking-wider uppercase px-1.5 py-0.5 sm:px-2 sm:py-0.5 border border-[#E7E5E4]">
                   {item.category}
                 </div>
               </div>
 
               {/* Caption */}
-              <div className="p-4 flex flex-col justify-between flex-1">
+              <div className="p-2 sm:p-3.5 flex flex-col justify-between flex-1">
                 <div>
-                  <div className="flex items-baseline justify-between">
-                    <h3 className="font-serif text-base text-[#1C1917] font-normal group-hover:text-[#B48C36] transition-colors">
+                  <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-0.5 sm:gap-1">
+                    <h3 className="font-serif text-xs sm:text-sm md:text-base text-[#1C1917] font-normal group-hover:text-[#B48C36] transition-colors line-clamp-1">
                       {item.title}
                     </h3>
-                    <span className="font-serif text-sm font-bold text-[#1C1917]">
+                    <span className="font-serif text-xs sm:text-sm font-bold text-[#1C1917] whitespace-nowrap">
                       {item.price}
                     </span>
                   </div>
-                  <p className="text-[11px] text-[#78716C] font-light mt-1 leading-snug">
+                  <p className="text-[9px] sm:text-[10.5px] text-[#78716C] font-light mt-0.5 sm:mt-1 leading-snug line-clamp-2">
                     {item.tagline}
                   </p>
                 </div>
 
-                <div className="pt-3 mt-3 border-t border-[#F5F5F4] flex items-center justify-between">
-                  <span className="text-[10px] text-[#A8A29E] uppercase tracking-wider">
+                <div className="pt-2 sm:pt-2.5 mt-2 sm:mt-2.5 border-t border-[#F5F5F4] flex items-center justify-between">
+                  <span className="text-[8px] sm:text-[10px] text-[#A8A29E] uppercase tracking-wider truncate max-w-[65px] sm:max-w-none">
                     Plata Ley 950
                   </span>
-                  <span className="text-[10.5px] font-semibold text-[#1C1917] flex items-center gap-1 group-hover:text-[#B48C36] transition-colors">
+                  <span className="text-[8px] sm:text-[10px] font-semibold text-[#1C1917] flex items-center gap-0.5 sm:gap-1 group-hover:text-[#B48C36] transition-colors shrink-0">
                     <span>Ver Detalles</span>
-                    <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
+                    <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 transition-transform group-hover:translate-x-1" />
                   </span>
                 </div>
               </div>

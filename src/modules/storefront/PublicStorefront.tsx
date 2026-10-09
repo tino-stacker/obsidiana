@@ -172,15 +172,15 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ products }) 
       <StorefrontTrustBar />
 
       {/* 4. Main Products Catalog */}
-      <main id="catalog-grid" className="max-w-7xl mx-auto px-4 sm:px-6 py-12 flex-1 w-full">
+      <main id="catalog-grid" className="max-w-7xl mx-auto px-3 sm:px-6 py-8 sm:py-12 flex-1 w-full">
         {/* Catalog Control Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-[#E7E5E4] mb-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6 pb-4 sm:pb-6 border-b border-[#E7E5E4] mb-6 sm:mb-8">
           <div>
             <div className="flex items-center gap-2 text-[10px] font-bold tracking-[0.25em] uppercase text-[#78716C] mb-1">
               <Sparkles className="w-3.5 h-3.5 text-[#B48C36]" />
               <span>Platería de Autor</span>
             </div>
-            <h2 className="font-serif text-3xl md:text-4xl text-[#1C1917] font-normal leading-tight">
+            <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl text-[#1C1917] font-normal leading-tight">
               {selectedCategory === 'all' ? 'Colección Exclusiva' : selectedCategory}
             </h2>
             <p className="text-xs text-[#78716C] mt-1 font-light">
@@ -189,14 +189,14 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ products }) 
           </div>
 
           {/* Quick Filters / Sorting */}
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             {/* Category Pills (Secondary row) */}
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
               {categories.slice(0, 6).map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`text-[10.5px] font-semibold tracking-wider uppercase px-3 py-1.5 rounded-full transition-all whitespace-nowrap ${
+                  className={`text-[9.5px] sm:text-[10.5px] font-semibold tracking-wider uppercase px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full transition-all whitespace-nowrap ${
                     selectedCategory === cat
                       ? 'bg-[#1C1917] text-white'
                       : 'bg-[#F5F5F4] text-[#44403C] hover:bg-[#E7E5E4]'
@@ -212,22 +212,22 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ products }) 
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="appearance-none bg-white hover:bg-[#F5F5F4] border border-[#E7E5E4] text-[#1C1917] text-xs font-medium py-1.5 pl-3 pr-8 rounded-xs cursor-pointer focus:outline-none transition-colors"
+                className="appearance-none bg-white hover:bg-[#F5F5F4] border border-[#E7E5E4] text-[#1C1917] text-[11px] sm:text-xs font-medium py-1 sm:py-1.5 pl-2.5 sm:pl-3 pr-7 sm:pr-8 rounded-xs cursor-pointer focus:outline-none transition-colors"
               >
                 <option value="featured">Destacados</option>
                 <option value="price-asc">Precio: Menor a Mayor</option>
                 <option value="price-desc">Precio: Mayor a Menor</option>
               </select>
-              <ArrowUpDown className="w-3 h-3 text-[#78716C] absolute right-2.5 pointer-events-none" />
+              <ArrowUpDown className="w-3 h-3 text-[#78716C] absolute right-2 pointer-events-none" />
             </div>
           </div>
         </div>
 
         {/* Product Cards Grid */}
         {filteredProducts.length === 0 ? (
-          <div className="text-center py-20 bg-[#FAF9F6] rounded-xs border border-dashed border-[#E7E5E4] p-8">
-            <Filter className="w-10 h-10 text-[#A8A29E] mx-auto mb-4 stroke-1" />
-            <h3 className="font-serif text-2xl text-[#1C1917]">No encontramos coincidencias</h3>
+          <div className="text-center py-16 sm:py-20 bg-[#FAF9F6] rounded-xs border border-dashed border-[#E7E5E4] p-6 sm:p-8">
+            <Filter className="w-8 h-8 sm:w-10 sm:h-10 text-[#A8A29E] mx-auto mb-3 stroke-1" />
+            <h3 className="font-serif text-xl sm:text-2xl text-[#1C1917]">No encontramos coincidencias</h3>
             <p className="text-xs text-[#78716C] mt-2 max-w-md mx-auto">
               Intenta con otra palabra clave o restablece los filtros para ver la colección completa de Obsidiana.
             </p>
@@ -236,13 +236,13 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ products }) 
                 setSearchQuery('');
                 setSelectedCategory('all');
               }}
-              className="mt-6 px-6 py-2.5 bg-[#1C1917] text-white text-[10px] font-bold tracking-[0.2em] uppercase rounded-xs hover:bg-[#44403C] transition-colors"
+              className="mt-5 px-5 py-2.5 bg-[#1C1917] text-white text-[10px] font-bold tracking-[0.2em] uppercase rounded-xs hover:bg-[#44403C] transition-colors"
             >
               Restablecer Filtros
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6 lg:gap-8">
             {filteredProducts.map((product) => (
               <StorefrontProductCard
                 key={product.id}
@@ -296,26 +296,26 @@ export const PublicStorefront: React.FC<PublicStorefrontProps> = ({ products }) 
         <aside
           role="status"
           aria-live="polite"
-          className="fixed bottom-6 right-6 z-[130] bg-[#181716] text-[#FDFCFB] px-5 py-3.5 rounded-xs shadow-2xl border border-white/10 flex items-center gap-3 animate-in slide-in-from-bottom-5 duration-300"
+          className="fixed bottom-4 right-4 left-4 sm:left-auto z-[130] bg-[#181716] text-[#FDFCFB] px-4 py-3 rounded-xs shadow-2xl border border-white/10 flex items-center justify-between sm:justify-start gap-3 animate-in slide-in-from-bottom-5 duration-300"
         >
           <div className="w-6 h-6 rounded-full bg-emerald-600 flex items-center justify-center shrink-0">
             <Check className="w-3.5 h-3.5 text-white" />
           </div>
-          <div className="text-xs">
-            <p className="font-medium text-[#FDFCFB]">{toastMessage}</p>
+          <div className="text-xs min-w-0 flex-1">
+            <p className="font-medium text-[#FDFCFB] truncate">{toastMessage}</p>
           </div>
           <button
             onClick={() => {
               setToastMessage(null);
               setIsCartOpen(true);
             }}
-            className="ml-2 text-[10px] font-bold tracking-widest uppercase text-[#C29B38] hover:text-white underline underline-offset-4"
+            className="ml-1 sm:ml-2 text-[10px] font-bold tracking-widest uppercase text-[#C29B38] hover:text-white underline underline-offset-4 shrink-0 cursor-pointer"
           >
             Ver Bolsa
           </button>
           <button
             onClick={() => setToastMessage(null)}
-            className="text-[#8C8276] hover:text-white p-1"
+            className="text-[#8C8276] hover:text-white p-1 shrink-0 cursor-pointer"
           >
             <X className="w-3.5 h-3.5" />
           </button>

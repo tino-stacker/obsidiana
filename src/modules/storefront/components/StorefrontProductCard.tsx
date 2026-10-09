@@ -125,20 +125,20 @@ export const StorefrontProductCard: React.FC<StorefrontProductCardProps> = ({
       </div>
 
       {/* Product Details */}
-      <div className="p-3.5 sm:p-4 flex flex-col justify-between flex-1 gap-2 border-t border-[#F5F5F4] bg-white">
+      <div className="p-2 sm:p-3.5 flex flex-col justify-between flex-1 gap-1.5 sm:gap-2 border-t border-[#F5F5F4] bg-white">
         <div>
-          <div className="flex items-baseline justify-between gap-2">
-            <h3 className="font-serif text-base sm:text-lg text-[#1C1917] group-hover:text-[#B48C36] transition-colors leading-snug line-clamp-1">
+          <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-0.5 sm:gap-2">
+            <h3 className="font-serif text-xs sm:text-base md:text-lg text-[#1C1917] group-hover:text-[#B48C36] transition-colors leading-snug line-clamp-1">
               {product.name}
             </h3>
-            <span className="font-serif text-base font-bold text-[#1C1917] whitespace-nowrap">
+            <span className="font-serif text-xs sm:text-sm md:text-base font-bold text-[#1C1917] whitespace-nowrap">
               S/ {product.price.toFixed(2)}
             </span>
           </div>
 
-          <div className="flex items-center justify-between text-[10px] text-[#A8A29E] mt-1">
-            <span className="tracking-wider uppercase">Plata Fina 950 / 925</span>
-            <span className="font-mono text-[9px]">{product.sku}</span>
+          <div className="flex items-center justify-between text-[8.5px] sm:text-[10px] text-[#A8A29E] mt-0.5 sm:mt-1">
+            <span className="tracking-wider uppercase truncate max-w-[70px] sm:max-w-none">Plata 950 / 925</span>
+            <span className="font-mono text-[8px] sm:text-[9px] shrink-0">{product.sku}</span>
           </div>
         </div>
 
@@ -147,7 +147,7 @@ export const StorefrontProductCard: React.FC<StorefrontProductCardProps> = ({
           type="button"
           disabled={isOutOfStock}
           onClick={handleAddToCart}
-          className={`w-full py-2.5 px-3 flex items-center justify-center gap-2 text-[10px] font-bold tracking-[0.18em] uppercase transition-all duration-200 rounded-xs shadow-2xs ${
+          className={`w-full py-2 sm:py-2.5 px-1.5 sm:px-3 flex items-center justify-center gap-1 sm:gap-2 text-[8px] sm:text-[10px] font-bold tracking-[0.12em] sm:tracking-[0.18em] uppercase transition-all duration-200 rounded-xs shadow-2xs ${
             isOutOfStock
               ? 'bg-[#F5F5F4] text-[#A8A29E] cursor-not-allowed'
               : isAdded
@@ -159,12 +159,12 @@ export const StorefrontProductCard: React.FC<StorefrontProductCardProps> = ({
             <span>Agotado</span>
           ) : isAdded ? (
             <>
-              <Check className="w-3.5 h-3.5" />
-              <span>Agregado a la bolsa</span>
+              <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+              <span>Agregado</span>
             </>
           ) : (
             <>
-              <Plus className="w-3.5 h-3.5" />
+              <Plus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               <span>Añadir a la Bolsa</span>
             </>
           )}

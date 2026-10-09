@@ -33,7 +33,7 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
   return (
     <header className="sticky top-0 z-50 w-full transition-all duration-300">
       {/* Top Luxury Announcement Bar */}
-      <div className="bg-[#292524] text-white/90 text-[10px] tracking-[0.22em] uppercase py-2 px-4 text-center font-medium border-b border-[#1C1917] flex items-center justify-center gap-2">
+      <div className="bg-[#292524] text-white/90 text-[9px] sm:text-[10px] tracking-[0.18em] sm:tracking-[0.22em] uppercase py-1.5 sm:py-2 px-3 sm:px-4 text-center font-medium border-b border-[#1C1917] flex items-center justify-center gap-1.5 sm:gap-2">
         <Sparkles className="w-3 h-3 text-[#B48C36] shrink-0" />
         <span className="truncate">
           Plata Peruana Ley 950 & 925 Certificada • Envíos Express a Todo el Perú • Empaque de Regalo Incluido
@@ -43,34 +43,34 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
 
       {/* Main Navigation Bar */}
       <nav className="bg-white/95 backdrop-blur-md border-b border-[#E7E5E4]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-4">
           
-          {/* Mobile Menu Trigger */}
-          <div className="flex items-center gap-3 lg:hidden">
+          {/* Mobile Menu Trigger & Search */}
+          <div className="flex items-center gap-1 sm:gap-2 lg:hidden">
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 text-[#181716] hover:text-[#8C8276] transition-colors"
+              className="p-1.5 sm:p-2 text-[#181716] hover:text-[#8C8276] transition-colors"
               title="Abrir menú"
             >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isMobileMenuOpen ? <X className="w-5 h-5 sm:w-6 sm:h-6" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
             </button>
             <button
               type="button"
               onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="p-2 text-[#181716] hover:text-[#8C8276] transition-colors"
+              className="p-1.5 sm:p-2 text-[#181716] hover:text-[#8C8276] transition-colors"
               title="Buscar joya"
             >
-              <Search className="w-5 h-5" />
+              <Search className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
 
           {/* Brand Logo */}
           <div 
             onClick={() => onSelectCategory('all')} 
-            className="flex items-center gap-3.5 cursor-pointer select-none group"
+            className="flex items-center gap-2 sm:gap-3.5 cursor-pointer select-none group min-w-0"
           >
-            <div className="w-10 h-10 bg-[#181716] rounded-xs flex items-center justify-center shadow-md overflow-hidden transition-transform duration-300 group-hover:scale-105">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#181716] rounded-xs flex items-center justify-center shadow-md overflow-hidden shrink-0 transition-transform duration-300 group-hover:scale-105">
               <img
                 src="/assets/Icono/icono-negro.jpeg"
                 alt="Obsidiana Joyería"
@@ -80,18 +80,18 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
                 }}
               />
             </div>
-            <div>
-              <span className="font-serif text-2xl tracking-[0.25em] font-normal uppercase text-[#181716] block leading-none">
+            <div className="min-w-0">
+              <span className="font-serif text-lg sm:text-2xl tracking-[0.18em] sm:tracking-[0.25em] font-normal uppercase text-[#181716] block leading-none truncate">
                 Obsidiana
               </span>
-              <span className="text-[8.5px] tracking-[0.35em] text-[#8C8276] uppercase font-sans font-medium block mt-1">
+              <span className="text-[7px] sm:text-[8.5px] tracking-[0.25em] sm:tracking-[0.35em] text-[#8C8276] uppercase font-sans font-medium block mt-0.5 sm:mt-1 truncate">
                 Joyería Fina & Plata 950
               </span>
             </div>
           </div>
 
           {/* Desktop Categories Links */}
-          <div className="hidden lg:flex items-center gap-8">
+          <div className="hidden lg:flex items-center gap-7 xl:gap-8">
             {categories.map((cat) => {
               const isActive = selectedCategory === cat;
               return (
@@ -114,15 +114,15 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
                 onClick={onScrollToLookbook}
                 className="text-[11px] font-semibold tracking-[0.2em] uppercase text-[#8C8276] hover:text-[#181716] transition-colors"
               >
-                Inspiración
+                Inspiración / Modelos
               </button>
             )}
           </div>
 
           {/* Right Actions: Search + Bag */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             {/* Desktop Search Field */}
-            <div className="hidden md:flex items-center relative w-60">
+            <div className="hidden md:flex items-center relative w-48 lg:w-60">
               <input
                 type="text"
                 placeholder="Buscar joya o SKU..."
@@ -145,7 +145,7 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
             <button
               type="button"
               onClick={onOpenCart}
-              className="flex items-center gap-2.5 bg-[#181716] hover:bg-[#61564A] text-[#FDFCFB] px-4 py-2.5 rounded-xs transition-all duration-300 shadow-sm active:scale-95 group"
+              className="flex items-center gap-1.5 sm:gap-2.5 bg-[#181716] hover:bg-[#61564A] text-[#FDFCFB] px-3 sm:px-4 py-2 sm:py-2.5 rounded-xs transition-all duration-300 shadow-sm active:scale-95 group shrink-0"
             >
               <div className="relative">
                 <ShoppingBag className="w-4 h-4 transition-transform duration-300 group-hover:scale-110" />
@@ -164,14 +164,14 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
 
         {/* Mobile Search Dropdown */}
         {isSearchOpen && (
-          <div className="lg:hidden px-4 py-3 bg-[#F7F5F2] border-t border-[#EBE6DF]">
+          <div className="lg:hidden px-3 sm:px-4 py-2.5 sm:py-3 bg-[#F7F5F2] border-t border-[#EBE6DF]">
             <div className="relative w-full">
               <input
                 type="text"
-                placeholder="Buscar por nombre o modelo..."
+                placeholder="Buscar por nombre, modelo o SKU..."
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
-                className="w-full pl-9 pr-8 py-2 bg-white border border-[#E4DFD7] rounded-xs text-sm text-[#181716] placeholder-[#A59B8F] focus:outline-none focus:border-[#181716]"
+                className="w-full pl-9 pr-8 py-2 bg-white border border-[#E4DFD7] rounded-xs text-xs sm:text-sm text-[#181716] placeholder-[#A59B8F] focus:outline-none focus:border-[#181716]"
                 autoFocus
               />
               <Search className="w-4 h-4 text-[#8C8276] absolute left-3 top-1/2 -translate-y-1/2" />
@@ -189,31 +189,55 @@ export const StorefrontNavbar: React.FC<StorefrontNavbarProps> = ({
 
         {/* Mobile Flyout Menu */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden bg-[#FDFCFB] border-t border-[#EBE6DF] px-6 py-6 space-y-4 animate-in slide-in-from-top duration-200">
-            <div className="space-y-2">
-              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#8C8276] mb-3">
-                Categorías
+          <div className="lg:hidden bg-[#FDFCFB] border-t border-[#EBE6DF] px-5 py-5 space-y-4 animate-in slide-in-from-top duration-200 shadow-lg">
+            {onScrollToLookbook && (
+              <button
+                onClick={() => {
+                  onScrollToLookbook();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full py-2.5 px-3 bg-[#FAF9F6] border border-[#E7E5E4] rounded-xs flex items-center justify-between text-xs font-bold tracking-[0.2em] uppercase text-[#1C1917]"
+              >
+                <span className="flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5 text-[#B48C36]" />
+                  <span>Ver Modelos & Galería</span>
+                </span>
+                <ArrowRight className="w-3.5 h-3.5 text-[#A59B8F]" />
+              </button>
+            )}
+
+            <div className="space-y-1.5">
+              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#8C8276] mb-2">
+                Categorías de Joyería
               </p>
               {categories.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => handleCategoryClick(cat)}
-                  className={`w-full flex items-center justify-between text-left py-2.5 text-xs font-semibold tracking-[0.15em] uppercase border-b border-[#F7F5F2] ${
+                  className={`w-full flex items-center justify-between text-left py-2 text-xs font-semibold tracking-[0.15em] uppercase border-b border-[#F7F5F2] ${
                     selectedCategory === cat ? 'text-[#181716] font-bold' : 'text-[#61564A]'
                   }`}
                 >
                   <span>{cat === 'all' ? 'Toda la Colección' : cat}</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-[#A59B8F]" />
+                  <ArrowRight className="w-3 h-3 text-[#A59B8F]" />
                 </button>
               ))}
             </div>
 
-            <div className="pt-4 border-t border-[#EBE6DF]">
+            <div className="pt-3 border-t border-[#EBE6DF] flex flex-col gap-2">
+              <a
+                href="https://wa.me/51906313634?text=Hola%20Obsidiana%2C%20quisiera%20asesoría%20sobre%20sus%20joyas"
+                target="_blank"
+                rel="noreferrer"
+                className="text-[10px] font-semibold text-emerald-800 hover:text-emerald-900 uppercase tracking-[0.15em] block py-1"
+              >
+                Asesoría WhatsApp: +51 906 313 634
+              </a>
               <a
                 href="#rubenasmat"
                 className="text-[10px] font-semibold text-[#8C8276] hover:text-[#181716] uppercase tracking-[0.15em] block py-1"
               >
-                Acceso Administrativo
+                Acceso Administrativo / POS
               </a>
             </div>
           </div>
