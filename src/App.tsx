@@ -49,6 +49,16 @@ import { zonasService } from './lib/zonasService';
 import { buildOrderEmailHtml } from './modules/notifications/templates/orderEmailHtml';
 import { LoginScreen } from './modules/auth/components/LoginScreen';
 import { Toast } from './components/Toast';
+import { supabase } from './lib/supabase';
+
+const SECRET_ADMIN_HASH = '#biribiribanban';
+const LEGACY_ADMIN_HASH = '#rubenasmat';
+
+const checkIsAdminHash = () => {
+  if (typeof window === 'undefined') return false;
+  const hash = window.location.hash.toLowerCase();
+  return hash === SECRET_ADMIN_HASH || hash === LEGACY_ADMIN_HASH;
+};
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'orders' | 'pos' | 'inventory' | 'shipping' | 'tracking' | 'reports' | 'emails' | 'clients'>('pos');
@@ -68,7 +78,7 @@ export default function App() {
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
 
   // Nuevo estado para catálogo público
-  const [isAdminRoute, setIsAdminRoute] = useState(() => window.location.hash === '#rubenasmat');
+  const [isAdminRoute, setIsAdminRoute] = useState(() => checkIsAdminHash() || !!localStorage.getItem('obs_admin_session'));
   const [session, setSession] = useState<any>(() => {
     try {
       const saved = localStorage.getItem('obs_admin_session');
@@ -199,7 +209,7 @@ export default function App() {
 
     // Escuchar cambios en el hash de la URL
     const handleHashChange = () => {
-      setIsAdminRoute(window.location.hash === '#rubenasmat');
+      if (checkIsAdminHash()) { setIsAdminRoute(true); }
     };
     window.addEventListener('hashchange', handleHashChange);
     return () => {
@@ -212,24 +222,123 @@ export default function App() {
     setAuthLoading(true);
     setAuthError('');
     try {
-      const user = authEmail.trim().toLowerCase();
-      const pass = authPassword.trim();
+      const cleanEmail = authEmail.trim().toLowerCase();
+      const cleanPass = authPassword.trim();
 
-      if (user === 'tino' && pass === '123') {
-        const localSession = {
+      if (!cleanEmail || !cleanPass) {
+        setAuthError('Por favor ingresa usuario/correo y contraseña.');
+        setAuthLoading(false);
+        return;
+      }
+
+      // 1. Validar contra Supabase RPC fn_login si está disponible
+      try {
+        const { data, error } = await supabase.rpc('fn_login', {
+          p_email: cleanEmail,
+          p_password: cleanPass
+        });
+
+        if (!error && Array.isArray(data) && data.length > 0) {
+          const u = data[0];
+          const localSession = {
+            user: {
+              id: u.user_id,
+              email: u.email,
+              user_metadata: { 
+                name: u.full_name,
+                role: u.role_code,
+                roleName: u.role_name
+              },
+            },
+            role: u.role_code,
+            roleName: u.role_name,
+            access_token: 'supabase-token-' + u.user_id,
+          };
+          setSession(localSession);
+          localStorage.setItem('obs_admin_session', JSON.stringify(localSession));
+          localStorage.setItem('obsidiana_admin_user', JSON.stringify({
+            userId: u.user_id,
+            email: u.email,
+            fullName: u.full_name,
+            roleCode: u.role_code,
+            roleName: u.role_name,
+            permissions: u.permissions || []
+          }));
+          showToast(`¡Bienvenido ${u.full_name}! Acceso como ${u.role_code}.`);
+          return;
+        }
+      } catch (rpcErr) {
+        console.warn('Supabase fn_login RPC error / fallback:', rpcErr);
+      }
+
+      // 2. Fallback local para OWNER y ADMIN
+      if (cleanEmail === 'valentino@obsidiana.com' && cleanPass === '30092023') {
+        const ownerSession = {
+          user: {
+            id: 'usr-owner-001',
+            email: 'valentino@obsidiana.com',
+            user_metadata: { name: 'Valentino', role: 'OWNER', roleName: 'Propietario General' },
+          },
+          role: 'OWNER',
+          roleName: 'Propietario General',
+          access_token: 'local-token-owner',
+        };
+        setSession(ownerSession);
+        localStorage.setItem('obs_admin_session', JSON.stringify(ownerSession));
+        localStorage.setItem('obsidiana_admin_user', JSON.stringify({
+          userId: 'usr-owner-001',
+          email: 'valentino@obsidiana.com',
+          fullName: 'Valentino',
+          roleCode: 'OWNER',
+          roleName: 'Propietario General',
+          permissions: ['*']
+        }));
+        showToast('¡Bienvenido Valentino! Acceso total como OWNER.');
+        return;
+      }
+
+      if (cleanEmail === 'ruben@obsidiana.com' && cleanPass === '3009202620') {
+        const adminSession = {
+          user: {
+            id: 'usr-admin-002',
+            email: 'ruben@obsidiana.com',
+            user_metadata: { name: 'Rubén Asmat', role: 'ADMIN', roleName: 'Administrador de Operaciones' },
+          },
+          role: 'ADMIN',
+          roleName: 'Administrador de Operaciones',
+          access_token: 'local-token-admin',
+        };
+        setSession(adminSession);
+        localStorage.setItem('obs_admin_session', JSON.stringify(adminSession));
+        localStorage.setItem('obsidiana_admin_user', JSON.stringify({
+          userId: 'usr-admin-002',
+          email: 'ruben@obsidiana.com',
+          fullName: 'Rubén Asmat',
+          roleCode: 'ADMIN',
+          roleName: 'Administrador de Operaciones',
+          permissions: ['pos:access', 'orders:access', 'inventory:access', 'shipping:access']
+        }));
+        showToast('¡Bienvenido Rubén! Acceso operativo como ADMIN.');
+        return;
+      }
+
+      if (cleanEmail === 'tino' && cleanPass === '123') {
+        const legacySession = {
           user: {
             id: 'admin-tino',
             email: 'tino',
-            user_metadata: { name: 'Tino Admin' },
+            user_metadata: { name: 'Tino Admin', role: 'OWNER' },
           },
+          role: 'OWNER',
           access_token: 'local-token-tino',
         };
-        setSession(localSession);
-        localStorage.setItem('obs_admin_session', JSON.stringify(localSession));
-        setAuthError('');
-      } else {
-        setAuthError('Credenciales incorrectas. Usa user: tino / clave: 123');
+        setSession(legacySession);
+        localStorage.setItem('obs_admin_session', JSON.stringify(legacySession));
+        showToast('¡Bienvenido!');
+        return;
       }
+
+      setAuthError('Credenciales incorrectas. Verifica tu correo y contraseña.');
     } catch (err: any) {
       console.error('Error de autenticación:', err);
       setAuthError('Error procesando el inicio de sesión.');
@@ -240,7 +349,11 @@ export default function App() {
 
   const handleLogout = () => {
     localStorage.removeItem('obs_admin_session');
+    localStorage.removeItem('obsidiana_admin_user');
     setSession(null);
+    window.location.hash = '';
+    setIsAdminRoute(false);
+    showToast('Sesión cerrada correctamente.');
   };
 
 
