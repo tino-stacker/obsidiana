@@ -78,8 +78,18 @@ export const OrderRegistrationModal: React.FC<OrderRegistrationModalProps> = ({
     }
   }, [selectedProvinceId, availableDistricts]);
 
-  // Shipping Fee
-  const shippingFee = calculatedZone ? calculatedZone.shippingFee : 15.00;
+  // Shipping Fee (Customizable)
+  const [customShippingFee, setCustomShippingFee] = useState<number | ''>(15.00);
+  const [isShippingCustomized, setIsShippingCustomized] = useState(false);
+
+  // Update shippingFee when calculatedZone changes IF not manually customized
+  React.useEffect(() => {
+    if (!isShippingCustomized) {
+      setCustomShippingFee(calculatedZone ? calculatedZone.shippingFee : 15.00);
+    }
+  }, [calculatedZone, isShippingCustomized]);
+
+  const shippingFee = customShippingFee === '' ? 0 : Number(customShippingFee);
 
   // Subtotal & Total
   const subtotal = useMemo(() => {
@@ -184,6 +194,8 @@ export const OrderRegistrationModal: React.FC<OrderRegistrationModalProps> = ({
       });
 
       // Reset form
+      setIsShippingCustomized(false);
+      setCustomShippingFee(15.00);
       setCustomerName('');
       setCustomerEmail('');
       setCustomerPhone('');
@@ -317,11 +329,98 @@ export const OrderRegistrationModal: React.FC<OrderRegistrationModalProps> = ({
                   <div className="p-3 bg-blue-50 border border-blue-100 rounded-lg text-xs space-y-1">
                     <div className="flex justify-between font-semibold text-blue-800">
                       <span>Zona Asignada: {calculatedZone.name}</span>
-                      <span>Tarifa: S/ {calculatedZone.shippingFee.toFixed(2)}</span>
+                      <span>Tarifa estándar: S/ {calculatedZone.shippingFee.toFixed(2)}</span>
                     </div>
                     <p className="text-slate-500">Tiempo estimado: {calculatedZone.estimatedDays} | Courier: {calculatedZone.courierAssigned}</p>
                   </div>
                 )}
+
+                {/* Personalizar Costo de Envío */}
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold text-slate-700 flex items-center gap-1.5">
+                      <Truck className="w-3.5 h-3.5 text-blue-600" />
+                      <span>Costo de Envío:</span>
+                      {isShippingCustomized && (
+                        <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded">
+                          Personalizado
+                        </span>
+                      )}
+                    </span>
+                    {isShippingCustomized && calculatedZone && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsShippingCustomized(false);
+                          setCustomShippingFee(calculatedZone.shippingFee);
+                        }}
+                        className="text-[10px] text-blue-600 hover:underline cursor-pointer"
+                      >
+                        Restablecer a zona (S/ {calculatedZone.shippingFee.toFixed(2)})
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">S/</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.5"
+                        value={customShippingFee === '' ? '' : customShippingFee}
+                        onChange={(e) => {
+                          setIsShippingCustomized(true);
+                          setCustomShippingFee(e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value) || 0));
+                        }}
+                        placeholder="0.00"
+                        className="w-full bg-white border border-slate-200 rounded-md pl-7 pr-2.5 py-1 text-xs font-bold text-slate-800 focus:outline-none focus:border-blue-600"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsShippingCustomized(true);
+                        setCustomShippingFee(0);
+                      }}
+                      className={`px-2.5 py-1 text-xs font-medium rounded border transition-colors cursor-pointer ${
+                        shippingFee === 0
+                          ? 'bg-emerald-600 text-white border-emerald-600'
+                          : 'bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50'
+                      }`}
+                    >
+                      Gratis (S/ 0)
+                    </button>
+                  </div>
+
+                  {/* Preajustes rápidos */}
+                  <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                    <span className="text-[10px] text-slate-400 font-medium">Preajustes:</span>
+                    {[
+                      { label: 'S/ 0 Gratis', val: 0 },
+                      { label: 'S/ 10 Lima', val: 10 },
+                      { label: 'S/ 15 Express', val: 15 },
+                      { label: 'S/ 18 Provincia', val: 18 },
+                      { label: 'S/ 25 Urgente', val: 25 },
+                    ].map((p) => (
+                      <button
+                        key={p.val}
+                        type="button"
+                        onClick={() => {
+                          setIsShippingCustomized(true);
+                          setCustomShippingFee(p.val);
+                        }}
+                        className={`px-1.5 py-0.5 text-[10px] rounded border transition-colors cursor-pointer ${
+                          shippingFee === p.val
+                            ? 'bg-blue-600 text-white border-blue-600 font-bold'
+                            : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                        }`}
+                      >
+                        {p.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
                 <div>
                   <label className="block text-xs font-medium text-slate-700 mb-1">Dirección Exacta de Entrega *</label>
@@ -458,9 +557,30 @@ export const OrderRegistrationModal: React.FC<OrderRegistrationModalProps> = ({
                   <span>Subtotal Productos:</span>
                   <span>S/ {subtotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-slate-500">
-                  <span>Costo de Envío ({calculatedZone ? calculatedZone.name : 'Estándar'}):</span>
-                  <span>S/ {shippingFee.toFixed(2)}</span>
+                <div className="flex items-center justify-between text-slate-600">
+                  <span className="flex items-center gap-1">
+                    <span>Costo de Envío:</span>
+                    <span className="text-[10px] text-slate-400">
+                      ({isShippingCustomized ? 'Personalizado' : (calculatedZone ? calculatedZone.name : 'Estándar')})
+                    </span>
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <span className="font-semibold text-slate-400">S/</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.5"
+                      value={customShippingFee === '' ? '' : customShippingFee}
+                      onChange={(e) => {
+                        setIsShippingCustomized(true);
+                        setCustomShippingFee(e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value) || 0));
+                      }}
+                      className="w-18 bg-white border border-slate-300 rounded px-2 py-0.5 text-xs font-bold text-right text-slate-800 focus:outline-none focus:border-blue-600"
+                    />
+                    {shippingFee === 0 && (
+                      <span className="text-[10px] font-bold text-emerald-600 ml-0.5">Gratis</span>
+                    )}
+                  </div>
                 </div>
                 <div className="pt-2 border-t border-slate-200 flex justify-between font-bold text-sm text-blue-600">
                   <span>TOTAL A PAGAR:</span>

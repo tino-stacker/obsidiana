@@ -287,10 +287,15 @@ export const PosReceiptModal: React.FC<PosReceiptModalProps> = ({
                     <div className="bg-[#E4DFD7] px-3 py-1.5 font-bold text-[10px] text-[#161716] text-center uppercase tracking-wider">
                       TOTAL A PAGAR
                     </div>
-                    <div className="p-2 text-center bg-[#F8F7F5] flex-1 flex items-center justify-center">
+                    <div className="p-2 text-center bg-[#F8F7F5] flex-1 flex flex-col items-center justify-center">
                       <span className="font-bold text-xl text-[#161716]">
                         S/ {receipt.total.toFixed(2)}
                       </span>
+                      {receipt.shippingFee > 0 && (
+                        <span className="text-[9px] text-[#61564A] font-semibold mt-0.5">
+                          (Envío incluido: S/ {receipt.shippingFee.toFixed(2)})
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -340,6 +345,10 @@ export const PosReceiptModal: React.FC<PosReceiptModalProps> = ({
                       <div className="flex items-end space-x-2">
                         <span className="font-bold text-slate-500 uppercase text-[8px] tracking-wider w-14">NOMBRE:</span>
                         <span className="font-medium border-b border-[#E4DFD7] flex-1 pb-0.5 truncate">{receipt.customer.name}</span>
+                      </div>
+                      <div className="flex items-end space-x-2">
+                        <span className="font-bold text-slate-500 uppercase text-[8px] tracking-wider w-14">ENVÍO:</span>
+                        <span className="font-medium border-b border-[#E4DFD7] flex-1 pb-0.5">{receipt.shippingFee === 0 ? 'Gratis' : `S/ ${receipt.shippingFee.toFixed(2)}`}</span>
                       </div>
                       <div className="flex items-end space-x-2">
                         <span className="font-bold text-slate-500 uppercase text-[8px] tracking-wider w-14">TOTAL:</span>
@@ -509,10 +518,15 @@ export const PosReceiptModal: React.FC<PosReceiptModalProps> = ({
                     <div className="bg-[#E4DFD7] px-3 py-1.5 font-bold text-[10px] text-[#161716] text-center uppercase tracking-wider">
                       TOTAL A PAGAR
                     </div>
-                    <div className="p-2 text-center bg-[#F8F7F5] flex-1 flex items-center justify-center">
+                    <div className="p-2 text-center bg-[#F8F7F5] flex-1 flex flex-col items-center justify-center">
                       <span className="font-bold text-xl text-[#161716]">
                         S/ {receipt.total.toFixed(2)}
                       </span>
+                      {receipt.shippingFee > 0 && (
+                        <span className="text-[9px] text-[#61564A] font-semibold mt-0.5">
+                          (Envío incluido: S/ {receipt.shippingFee.toFixed(2)})
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -560,6 +574,10 @@ export const PosReceiptModal: React.FC<PosReceiptModalProps> = ({
                       <div className="flex items-end space-x-2">
                         <span className="font-bold text-slate-500 uppercase text-[8px] tracking-wider w-14">NOMBRE:</span>
                         <span className="font-medium border-b border-[#E4DFD7] flex-1 pb-0.5 truncate">{receipt.customer.name}</span>
+                      </div>
+                      <div className="flex items-end space-x-2">
+                        <span className="font-bold text-slate-500 uppercase text-[8px] tracking-wider w-14">ENVÍO:</span>
+                        <span className="font-medium border-b border-[#E4DFD7] flex-1 pb-0.5">{receipt.shippingFee === 0 ? 'Gratis' : `S/ ${receipt.shippingFee.toFixed(2)}`}</span>
                       </div>
                       <div className="flex items-end space-x-2">
                         <span className="font-bold text-slate-500 uppercase text-[8px] tracking-wider w-14">TOTAL:</span>

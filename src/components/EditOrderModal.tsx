@@ -301,15 +301,40 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-[11px] font-bold text-zinc-600 mb-1">Costo de Envío (S/)</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-[11px] font-bold text-zinc-600">Costo de Envío (S/)</label>
+                  {shippingFee === 0 && <span className="text-[10px] font-bold text-emerald-600">Gratis</span>}
+                </div>
                 <input
                   type="number"
                   step="0.5"
                   min="0"
                   value={shippingFee}
                   onChange={(e) => setShippingFee(parseFloat(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border border-zinc-300 rounded-lg text-xs font-semibold focus:ring-2 focus:ring-[#61564A] outline-none"
+                  className="w-full px-3 py-2 border border-zinc-300 rounded-lg text-xs font-bold focus:ring-2 focus:ring-[#61564A] outline-none"
                 />
+                <div className="flex items-center gap-1 flex-wrap mt-1.5">
+                  {[
+                    { label: 'Gratis S/ 0', val: 0 },
+                    { label: 'S/ 10 Lima', val: 10 },
+                    { label: 'S/ 15 Express', val: 15 },
+                    { label: 'S/ 18 Shalom', val: 18 },
+                    { label: 'S/ 25 Urgente', val: 25 },
+                  ].map((p) => (
+                    <button
+                      key={p.val}
+                      type="button"
+                      onClick={() => setShippingFee(p.val)}
+                      className={`px-1.5 py-0.5 text-[9px] font-bold rounded border cursor-pointer transition-all ${
+                        shippingFee === p.val
+                          ? 'bg-[#181716] text-[#E4DFD7] border-[#181716] shadow-2xs'
+                          : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-100'
+                      }`}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div>

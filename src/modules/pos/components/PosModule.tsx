@@ -88,8 +88,42 @@ export const PosModule: React.FC<PosModuleProps> = ({
 
   // Shipping & Delivery State
   const [deliveryType, setDeliveryType] = useState<'tienda' | 'express' | 'provincia'>('express');
-  const [limaShippingPrice, setLimaShippingPrice] = useState(() => Number(localStorage.getItem('limaShippingPrice') || 10));
-  const [provinciaShippingPrice, setProvinciaShippingPrice] = useState(() => Number(localStorage.getItem('provinciaShippingPrice') || 18));
+  const [limaShippingPrice, setLimaShippingPrice] = useState<number>(() => Number(localStorage.getItem('limaShippingPrice') || 10));
+  const [provinciaShippingPrice, setProvinciaShippingPrice] = useState<number>(() => Number(localStorage.getItem('provinciaShippingPrice') || 18));
+  
+  // Custom Shipping Fee for the current sale
+  const [customShippingFee, setCustomShippingFee] = useState<number | ''>(() => Number(localStorage.getItem('limaShippingPrice') || 10));
+  const [isShippingCustomized, setIsShippingCustomized] = useState<boolean>(false);
+
+  const handleSelectDeliveryType = (type: 'tienda' | 'express' | 'provincia') => {
+    setDeliveryType(type);
+    setIsShippingCustomized(false);
+    if (type === 'tienda') {
+      setCustomShippingFee(0);
+    } else if (type === 'express') {
+      setCustomShippingFee(limaShippingPrice);
+    } else if (type === 'provincia') {
+      setCustomShippingFee(provinciaShippingPrice);
+    }
+  };
+
+  const handleUpdateShippingFee = (val: number | '') => {
+    setIsShippingCustomized(true);
+    setCustomShippingFee(val);
+  };
+
+  const handleSaveAsDefaultShippingPrice = () => {
+    const feeNumber = customShippingFee === '' ? 0 : Number(customShippingFee);
+    if (deliveryType === 'express') {
+      setLimaShippingPrice(feeNumber);
+      localStorage.setItem('limaShippingPrice', String(feeNumber));
+      showToastNotice('Tarifa Lima Express guardada por defecto: S/ ' + feeNumber.toFixed(2), 'success');
+    } else if (deliveryType === 'provincia') {
+      setProvinciaShippingPrice(feeNumber);
+      localStorage.setItem('provinciaShippingPrice', String(feeNumber));
+      showToastNotice('Tarifa Provincia guardada por defecto: S/ ' + feeNumber.toFixed(2), 'success');
+    }
+  };
   
   // Lima Express fields
   const [selectedDistrict, setSelectedDistrict] = useState<string>('Miraflores');
@@ -121,13 +155,11 @@ export const PosModule: React.FC<PosModuleProps> = ({
   // Categories with count
   const categoriesList = ['Aretes', 'Conjuntos', 'Collares', 'Pulseras', 'Anillos'];
 
-  // Calculate Shipping Fee
+  // Calculate Shipping Fee (Customizable)
   const shippingFee = useMemo(() => {
-    if (deliveryType === 'tienda') return 0;
-    if (deliveryType === 'express') return limaShippingPrice;
-    if (deliveryType === 'provincia') return provinciaShippingPrice;
-    return limaShippingPrice;
-  }, [deliveryType, limaShippingPrice, provinciaShippingPrice]);
+    if (customShippingFee === '') return 0;
+    return Number(customShippingFee);
+  }, [customShippingFee]);
 
   // Filtered Products
   const filteredProducts = useMemo(() => {
@@ -420,6 +452,9 @@ export const PosModule: React.FC<PosModuleProps> = ({
     setAdelantoAmount(0);
     setDiscount(0);
     setNotes('');
+    setIsShippingCustomized(false);
+    setCustomShippingFee(limaShippingPrice);
+    setDeliveryType('express');
   };
 
   return (
@@ -850,7 +885,7 @@ export const PosModule: React.FC<PosModuleProps> = ({
               <div className="grid grid-cols-3 gap-2">
                 <button
                   type="button"
-                  onClick={() => setDeliveryType('tienda')}
+                  onClick={() => handleSelectDeliveryType('tienda')}
                   className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center gap-1 ${
                     deliveryType === 'tienda'
                       ? 'bg-stone-950 text-white border-stone-950 shadow-sm'
@@ -866,7 +901,7 @@ export const PosModule: React.FC<PosModuleProps> = ({
 
                 <button
                   type="button"
-                  onClick={() => setDeliveryType('express')}
+                  onClick={() => handleSelectDeliveryType('express')}
                   className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center gap-1 ${
                     deliveryType === 'express'
                       ? 'bg-stone-950 text-white border-stone-950 shadow-sm'
@@ -876,13 +911,13 @@ export const PosModule: React.FC<PosModuleProps> = ({
                   <MotorbikeIconSvg className={`w-4 h-4 ${deliveryType === 'express' ? 'text-amber-400' : 'text-stone-500'}`} />
                   <span className="font-bold text-xs">Lima Express</span>
                   <span className={`text-[10px] font-black ${deliveryType === 'express' ? 'text-amber-300' : 'text-amber-700'}`}>
-                    S/ {limaShippingPrice}
+                    S/ {deliveryType === 'express' && isShippingCustomized ? shippingFee.toFixed(2) : limaShippingPrice}
                   </span>
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => setDeliveryType('provincia')}
+                  onClick={() => handleSelectDeliveryType('provincia')}
                   className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center gap-1 ${
                     deliveryType === 'provincia'
                       ? 'bg-stone-950 text-white border-stone-950 shadow-sm'
@@ -892,7 +927,7 @@ export const PosModule: React.FC<PosModuleProps> = ({
                   <Building2 className={`w-4 h-4 ${deliveryType === 'provincia' ? 'text-amber-400' : 'text-stone-500'}`} />
                   <span className="font-bold text-xs">Provincia</span>
                   <span className={`text-[10px] font-black ${deliveryType === 'provincia' ? 'text-amber-300' : 'text-amber-700'}`}>
-                    S/ {provinciaShippingPrice}
+                    S/ {deliveryType === 'provincia' && isShippingCustomized ? shippingFee.toFixed(2) : provinciaShippingPrice}
                   </span>
                 </button>
               </div>
@@ -1116,6 +1151,106 @@ export const PosModule: React.FC<PosModuleProps> = ({
                   )}
                 </div>
               )}
+
+              {/* Personalización de Costo de Envío */}
+              <div className="p-3 bg-amber-50/60 border border-amber-200/90 rounded-xl space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <DollarSign className="w-3.5 h-3.5 text-amber-600" />
+                    <span className="text-xs font-black text-stone-800 tracking-tight">Costo de Envío</span>
+                    {isShippingCustomized && (
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-200 text-amber-900">
+                        Personalizado
+                      </span>
+                    )}
+                  </div>
+                  
+                  {isShippingCustomized && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsShippingCustomized(false);
+                        if (deliveryType === 'tienda') setCustomShippingFee(0);
+                        else if (deliveryType === 'express') setCustomShippingFee(limaShippingPrice);
+                        else setCustomShippingFee(provinciaShippingPrice);
+                      }}
+                      className="text-[10px] font-bold text-amber-900 hover:text-stone-900 underline cursor-pointer"
+                    >
+                      Restablecer estándar (S/ {deliveryType === 'tienda' ? 0 : deliveryType === 'express' ? limaShippingPrice : provinciaShippingPrice})
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-black text-stone-400">
+                      S/
+                    </span>
+                    <input
+                      type="number"
+                      min={0}
+                      step="0.50"
+                      value={customShippingFee === '' ? '' : customShippingFee}
+                      onChange={(e) => {
+                        const val = e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value) || 0);
+                        handleUpdateShippingFee(val);
+                      }}
+                      placeholder="0.00"
+                      className="w-full bg-white border border-stone-300 rounded-xl pl-8 pr-3 py-2 text-xs font-black text-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-stone-900 shadow-xs"
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleUpdateShippingFee(0)}
+                    className={`px-3 py-2 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                      shippingFee === 0
+                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                        : 'bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50'
+                    }`}
+                  >
+                    Envío Gratis (S/ 0)
+                  </button>
+
+                  {deliveryType !== 'tienda' && (
+                    <button
+                      type="button"
+                      title="Guardar este costo como tarifa predeterminada para futuras ventas"
+                      onClick={handleSaveAsDefaultShippingPrice}
+                      className="px-2.5 py-2 bg-white hover:bg-stone-100 border border-stone-200 rounded-xl text-[11px] font-bold text-stone-700 hover:text-stone-900 cursor-pointer transition-all flex items-center gap-1 shrink-0"
+                    >
+                      <span>💾 Fijar tarifa fija</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Preajustes rápidos */}
+                <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                  <span className="text-[10px] font-bold text-stone-400 mr-0.5">Tarifas rápidas:</span>
+                  {[
+                    { label: 'S/ 0 (Gratis)', val: 0 },
+                    { label: 'S/ 10 (Lima)', val: 10 },
+                    { label: 'S/ 12', val: 12 },
+                    { label: 'S/ 15 (Express)', val: 15 },
+                    { label: 'S/ 18 (Shalom)', val: 18 },
+                    { label: 'S/ 22 (Olva)', val: 22 },
+                    { label: 'S/ 25 (Urgente)', val: 25 },
+                  ].map((preset) => (
+                    <button
+                      key={preset.val}
+                      type="button"
+                      onClick={() => handleUpdateShippingFee(preset.val)}
+                      className={`px-2 py-1 text-[10px] font-bold rounded-lg border transition-all cursor-pointer ${
+                        shippingFee === preset.val
+                          ? 'bg-amber-400 text-stone-950 border-amber-400 shadow-xs font-black'
+                          : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-100'
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* SECTION 3: MÉTODO DE PAGO */}
@@ -1180,10 +1315,35 @@ export const PosModule: React.FC<PosModuleProps> = ({
               </div>
 
               <div className="flex items-center justify-between text-xs text-stone-600">
-                <span>Costo de Envío:</span>
-                <span className={`font-bold ${shippingFee === 0 ? 'text-emerald-600' : 'text-stone-900'}`}>
-                  {shippingFee === 0 ? 'Gratis (Tienda)' : `S/ ${shippingFee.toFixed(2)}`}
+                <span className="flex items-center gap-1">
+                  <span>Costo de Envío:</span>
+                  <span className="text-[10px] text-stone-400 font-medium">
+                    ({deliveryType === 'tienda' ? 'Tienda' : deliveryType === 'express' ? 'Lima' : 'Provincia'})
+                  </span>
+                  {isShippingCustomized && (
+                    <span className="text-[9px] font-bold text-amber-700 bg-amber-100 px-1 py-0.2 rounded">
+                      Personalizado
+                    </span>
+                  )}
                 </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-stone-400 text-xs">S/</span>
+                  <input
+                    type="number"
+                    min={0}
+                    step="0.50"
+                    value={customShippingFee === '' ? '' : customShippingFee}
+                    onChange={(e) => {
+                      const val = e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value) || 0);
+                      handleUpdateShippingFee(val);
+                    }}
+                    placeholder="0.00"
+                    className="w-20 bg-stone-50 hover:bg-white focus:bg-white border border-stone-200 focus:border-stone-900 rounded-lg px-2 py-0.5 text-xs font-black text-right text-stone-900 focus:outline-none transition-all shadow-2xs"
+                  />
+                  {shippingFee === 0 && (
+                    <span className="text-[10px] font-black text-emerald-600 ml-0.5">Gratis</span>
+                  )}
+                </div>
               </div>
 
               {discount > 0 && (
