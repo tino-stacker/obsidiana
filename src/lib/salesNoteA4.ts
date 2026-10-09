@@ -609,6 +609,219 @@ export function buildSalesNoteHtml(data: SalesNoteData): string {
     padding: 1mm;
     font-weight: 600;
   }
+
+  /* =========================================================
+     RESPONSIVE PARA TODAS LAS PANTALLAS (Móvil, Tablet, Desktop)
+     En pantalla se adapta al ancho de ventana disponible.
+     En impresión (@media print), se mantiene exacto en A4 210x297mm.
+     ========================================================= */
+  @media screen and (max-width: 820px) {
+    html, body {
+      background: #E8E4DD !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    .sheet {
+      width: 100% !important;
+      max-width: 100% !important;
+      height: auto !important;
+      min-height: auto !important;
+      max-height: none !important;
+      margin: 0 !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      padding-bottom: 8px;
+    }
+    .watermark {
+      font-size: 55pt;
+      letter-spacing: 6pt;
+    }
+    .header {
+      padding: 12px 14px 10px !important;
+      flex-direction: row !important;
+      flex-wrap: wrap !important;
+      gap: 8px !important;
+    }
+    .brand { gap: 10px !important; }
+    .logo { width: 40px !important; height: 40px !important; }
+    .brand-name { font-size: 18pt !important; letter-spacing: 4pt !important; }
+    .brand-tag { font-size: 6.2pt !important; letter-spacing: 1.5pt !important; }
+    .doc-box {
+      text-align: left !important;
+      width: 100% !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      border-top: 0.5pt solid rgba(165,155,143,.3) !important;
+      padding-top: 6px !important;
+      margin-top: 2px !important;
+    }
+    .doc-title { font-size: 13pt !important; margin-top: 0 !important; }
+    .doc-number { font-size: 8pt !important; margin-top: 0 !important; padding: 2px 8px !important; }
+    .content {
+      padding: 10px 12px 0 !important;
+      gap: 10px !important;
+    }
+    .cards {
+      grid-template-columns: 1fr !important;
+      gap: 8px !important;
+    }
+    .row {
+      grid-template-columns: 24mm 1fr !important;
+      font-size: 8pt !important;
+      padding: 1mm 0 !important;
+    }
+    .table-section {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-top: 2px;
+    }
+    table {
+      min-width: 100%;
+      font-size: 8pt !important;
+    }
+    tbody td {
+      padding: 2mm !important;
+    }
+    .summary {
+      grid-template-columns: 1fr !important;
+      gap: 8px !important;
+    }
+    .pay-grid {
+      grid-template-columns: repeat(3, 1fr) !important;
+      gap: 6px !important;
+    }
+    .guarantee {
+      grid-template-columns: 1fr !important;
+      gap: 8px !important;
+    }
+    .sign {
+      margin-top: 8px !important;
+      gap: 16px !important;
+    }
+    .footer {
+      margin-top: 10px !important;
+    }
+    .thanks {
+      font-size: 11pt !important;
+      padding: 6px 0 4px !important;
+    }
+    .contact {
+      flex-direction: column !important;
+      gap: 6px !important;
+      padding: 10px 12px !important;
+      font-size: 7.5pt !important;
+      text-align: center !important;
+    }
+    .contact span {
+      justify-content: center;
+    }
+  }
+
+  @media screen and (max-width: 480px) {
+    .pay-grid {
+      grid-template-columns: 1fr 1fr !important;
+    }
+    .row {
+      grid-template-columns: 20mm 1fr !important;
+    }
+    .sign {
+      grid-template-columns: 1fr !important;
+      gap: 12px !important;
+    }
+  }
+
+  /* Reglas de impresión para forzar 1 página exacta en cualquier dispositivo */
+  @media print {
+    @page {
+      size: A4 portrait;
+      margin: 0;
+    }
+    html, body {
+      background: #fff !important;
+      width: 210mm !important;
+      height: 297mm !important;
+      max-height: 297mm !important;
+      overflow: hidden !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .sheet {
+      width: 210mm !important;
+      height: 297mm !important;
+      max-height: 297mm !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      box-shadow: none !important;
+      overflow: hidden !important;
+      page-break-after: avoid !important;
+      page-break-inside: avoid !important;
+      break-after: avoid !important;
+      break-inside: avoid !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: space-between !important;
+    }
+    .header {
+      padding: 5mm 12mm 4.2mm !important;
+      flex-direction: row !important;
+      flex-wrap: nowrap !important;
+    }
+    .doc-box {
+      text-align: right !important;
+      width: auto !important;
+      display: block !important;
+      border-top: none !important;
+      padding-top: 0 !important;
+      margin-top: 0 !important;
+    }
+    .doc-title { font-size: 15pt !important; margin-top: .6mm !important; }
+    .doc-number { font-size: 8.5pt !important; margin-top: 1.4mm !important; padding: 1mm 3.2mm !important; }
+    .content {
+      padding: 4mm 12mm 0 !important;
+      gap: 2.8mm !important;
+    }
+    .cards {
+      grid-template-columns: 1fr 1fr !important;
+      gap: 3.5mm !important;
+    }
+    .row {
+      grid-template-columns: 21mm 1fr !important;
+      font-size: 7.8pt !important;
+    }
+    .summary {
+      grid-template-columns: 1fr 66mm !important;
+      gap: 3.5mm !important;
+    }
+    .pay-grid {
+      grid-template-columns: repeat(3, 1fr) !important;
+      gap: 2mm !important;
+    }
+    .guarantee {
+      grid-template-columns: 1.15fr 1fr !important;
+      gap: 3.5mm !important;
+    }
+    .sign {
+      margin-top: .5mm !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 16mm !important;
+    }
+    .footer {
+      margin-top: 2mm !important;
+    }
+    .thanks {
+      font-size: 12pt !important;
+      padding: 1.2mm 0 .8mm !important;
+    }
+    .contact {
+      flex-direction: row !important;
+      justify-content: space-around !important;
+      padding: 2mm 10mm !important;
+      font-size: 6.8pt !important;
+    }
+  }
 </style>
 </head>
 <body>

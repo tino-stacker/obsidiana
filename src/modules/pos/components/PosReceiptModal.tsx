@@ -118,8 +118,8 @@ export const PosReceiptModal: React.FC<PosReceiptModalProps> = ({
   const handlePrintClick = () => (receiptTab === 'a4' ? handleDownloadA4() : onPrint());
 
   return (
-    <div className="fixed inset-0 bg-black/80 z-50 flex items-start justify-center p-2 sm:p-4 py-10 overflow-y-auto backdrop-blur-xs">
-      <div className="bg-[#24211E] rounded-2xl max-w-4xl w-full p-4 sm:p-6 space-y-4 border border-[#61564A] shadow-2xl relative my-6 text-[#E4DFD7]">
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-start justify-center p-2 sm:p-4 py-4 sm:py-8 overflow-y-auto backdrop-blur-xs">
+      <div className="bg-[#24211E] rounded-2xl max-w-4xl w-full p-3 sm:p-6 space-y-3 sm:space-y-4 border border-[#61564A] shadow-2xl relative my-2 sm:my-6 text-[#E4DFD7]">
         {/* Header Tab Switcher & Close */}
         <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-[#61564A]/50 pb-3 gap-3 pr-8">
           <div>
@@ -132,12 +132,12 @@ export const PosReceiptModal: React.FC<PosReceiptModalProps> = ({
             </p>
           </div>
 
-          {/* Template Variant Tabs */}
-          <div className="flex flex-wrap items-center gap-1 bg-[#161716] p-1 rounded-xl border border-[#61564A]">
+          {/* Template Variant Tabs — Responsive scroll horizontal en móvil */}
+          <div className="flex items-center gap-1 bg-[#161716] p-1 rounded-xl border border-[#61564A] overflow-x-auto max-w-full">
             <button
               type="button"
               onClick={() => onSelectTab('a4')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center space-x-1 ${
+              className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center space-x-1 ${
                 receiptTab === 'a4' ? 'bg-[#E4DFD7] text-[#161716] shadow-xs' : 'text-[#A59B8F] hover:text-[#E4DFD7]'
               }`}
             >
@@ -148,7 +148,7 @@ export const PosReceiptModal: React.FC<PosReceiptModalProps> = ({
             <button
               type="button"
               onClick={() => onSelectTab('lima')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center space-x-1 ${
+              className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center space-x-1 ${
                 receiptTab === 'lima' ? 'bg-[#61564A] text-[#E4DFD7] shadow-xs' : 'text-[#A59B8F] hover:text-[#E4DFD7]'
               }`}
             >
@@ -159,7 +159,7 @@ export const PosReceiptModal: React.FC<PosReceiptModalProps> = ({
             <button
               type="button"
               onClick={() => onSelectTab('provincia')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center space-x-1 ${
+              className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center space-x-1 ${
                 receiptTab === 'provincia' ? 'bg-[#61564A] text-[#E4DFD7] shadow-xs' : 'text-[#A59B8F] hover:text-[#E4DFD7]'
               }`}
             >
@@ -170,7 +170,7 @@ export const PosReceiptModal: React.FC<PosReceiptModalProps> = ({
             <button
               type="button"
               onClick={() => onSelectTab('cliente_frente')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center space-x-1 ${
+              className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center space-x-1 ${
                 receiptTab === 'cliente_frente' ? 'bg-[#61564A] text-[#E4DFD7] shadow-xs' : 'text-[#A59B8F] hover:text-[#E4DFD7]'
               }`}
             >
@@ -181,7 +181,7 @@ export const PosReceiptModal: React.FC<PosReceiptModalProps> = ({
             <button
               type="button"
               onClick={() => onSelectTab('cliente_reverso')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center space-x-1 ${
+              className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center space-x-1 ${
                 receiptTab === 'cliente_reverso' ? 'bg-[#61564A] text-[#E4DFD7] shadow-xs' : 'text-[#A59B8F] hover:text-[#E4DFD7]'
               }`}
             >
@@ -201,25 +201,25 @@ export const PosReceiptModal: React.FC<PosReceiptModalProps> = ({
         {/* A4 PREVIEW (documento autocontenido idéntico al PDF) */}
         {receiptTab === 'a4' && (
           <div className="rounded-xl overflow-hidden border border-[#61564A] bg-[#D9D4CC]">
-            <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 bg-[#161716] border-b border-[#61564A]">
+            <div className="flex flex-wrap items-center justify-between gap-2 px-3 sm:px-4 py-2 bg-[#161716] border-b border-[#61564A]">
               <p className="text-[11px] text-[#A59B8F]">
                 Vista previa A4. En el diálogo elige <b className="text-[#E4DFD7]">“Guardar como PDF”</b> como destino.
               </p>
               <button
                 type="button"
                 onClick={handleDownloadA4}
-                className="bg-[#E4DFD7] hover:bg-white text-[#161716] font-black py-1.5 px-3 rounded-lg text-[11px] flex items-center space-x-1.5 transition-all cursor-pointer"
+                className="bg-[#E4DFD7] hover:bg-white text-[#161716] font-black py-1.5 px-3 rounded-lg text-[11px] flex items-center space-x-1.5 transition-all cursor-pointer shadow-xs"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Descargar PDF A4</span>
               </button>
             </div>
-            <div className="overflow-x-auto">
+            <div className="w-full flex justify-center bg-[#D9D4CC] p-1 sm:p-3 overflow-hidden">
               <iframe
                 title="Vista previa Nota de Venta A4"
                 srcDoc={buildSalesNoteHtml(salesNote)}
-                className="block mx-auto bg-[#D9D4CC]"
-                style={{ width: '100%', minWidth: '222mm', height: '1200px', border: 0 }}
+                className="w-full bg-[#D9D4CC] rounded-lg shadow-sm block"
+                style={{ height: '75vh', minHeight: '480px', maxHeight: '1150px', border: 0 }}
               />
             </div>
           </div>
@@ -843,7 +843,7 @@ export const PosReceiptModal: React.FC<PosReceiptModalProps> = ({
         </div>
 
         {/* Modal Actions */}
-        <div className="border-t border-[#61564A]/40 pt-4 grid grid-cols-1 sm:grid-cols-5 gap-2">
+        <div className="border-t border-[#61564A]/40 pt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
           <button
             type="button"
             onClick={handleDownloadA4}
@@ -883,7 +883,7 @@ export const PosReceiptModal: React.FC<PosReceiptModalProps> = ({
           <button
             type="button"
             onClick={onNewSale}
-            className="bg-[#161716] hover:bg-slate-800 text-[#E4DFD7] font-bold py-2.5 px-2 rounded-xl text-[11px] flex items-center justify-center space-x-1 border border-[#61564A] transition-all cursor-pointer"
+            className="col-span-2 sm:col-span-1 bg-[#161716] hover:bg-slate-800 text-[#E4DFD7] font-bold py-2.5 px-2 rounded-xl text-[11px] flex items-center justify-center space-x-1 border border-[#61564A] transition-all cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Nueva Venta</span>
