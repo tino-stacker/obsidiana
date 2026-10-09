@@ -42,7 +42,7 @@ import {
   INITIAL_STOCK_MOVEMENTS,
   INITIAL_EMAIL_LOGS,
 } from './data/mockData';
-import { CheckCircle2, AlertCircle } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Crown, ShieldCheck } from 'lucide-react';
 import { productosService, pedidosService, configService, clientesService } from './lib/services';
 import { zonasService } from './lib/zonasService';
 
@@ -832,6 +832,12 @@ export default function App() {
         pendingOrdersCount={pendingOrdersCount}
         lowStockCount={lowStockCount}
         onLogout={handleLogout}
+        currentUser={session ? {
+          name: session.user?.user_metadata?.name || session.user?.email,
+          email: session.user?.email,
+          role: session.role || session.user?.user_metadata?.role,
+          roleName: session.roleName || session.user?.user_metadata?.roleName
+        } : null}
       />
 
       {/* Main Content Area (Beside Sidebar) */}
@@ -859,8 +865,18 @@ export default function App() {
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span>Sistema Operativo Local</span>
             </div>
-            <div className="text-right text-[11px] text-stone-500">
-              <span className="font-semibold text-stone-700">tino (Admin)</span>
+            <div className="text-right text-[11px] text-stone-500 flex items-center space-x-2">
+              {session?.role === 'OWNER' || session?.user?.email === 'valentino@obsidiana.com' ? (
+                <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 font-bold text-xs">
+                  <Crown className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Valentino (Owner)</span>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-sky-50 border border-sky-200 text-sky-900 font-bold text-xs">
+                  <ShieldCheck className="w-3.5 h-3.5 text-sky-600" />
+                  <span>Rubén Asmat (Admin)</span>
+                </div>
+              )}
             </div>
           </div>
         </header>

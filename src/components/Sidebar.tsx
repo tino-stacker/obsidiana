@@ -15,7 +15,8 @@ import {
   ExternalLink,
   Sparkles,
   ChevronRight,
-  ShieldCheck
+  ShieldCheck,
+  Crown
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -25,6 +26,12 @@ interface SidebarProps {
   pendingOrdersCount: number;
   lowStockCount: number;
   onLogout?: () => void;
+  currentUser?: {
+    name?: string;
+    email?: string;
+    role?: string;
+    roleName?: string;
+  } | null;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -34,7 +41,39 @@ export const Sidebar: React.FC<SidebarProps> = ({
   pendingOrdersCount,
   lowStockCount,
   onLogout,
+  currentUser,
 }) => {
+  // Obtener usuario dinámicamente de props o localStorage
+  const activeUser = currentUser || (() => {
+    try {
+      const savedUser = localStorage.getItem('obsidiana_admin_user');
+      if (savedUser) {
+        const parsed = JSON.parse(savedUser);
+        return {
+          name: parsed.fullName || parsed.name,
+          email: parsed.email,
+          role: parsed.roleCode || parsed.role,
+          roleName: parsed.roleName,
+        };
+      }
+      const savedSession = localStorage.getItem('obs_admin_session');
+      if (savedSession) {
+        const parsed = JSON.parse(savedSession);
+        return {
+          name: parsed.user?.user_metadata?.name || parsed.user?.email,
+          email: parsed.user?.email,
+          role: parsed.role || parsed.user?.user_metadata?.role,
+          roleName: parsed.roleName || parsed.user?.user_metadata?.roleName,
+        };
+      }
+    } catch {}
+    return null;
+  })();
+
+  const isOwner = activeUser?.role === 'OWNER' || activeUser?.email === 'valentino@obsidiana.com';
+  const displayName = activeUser?.name || (isOwner ? 'Valentino' : 'Rubén Asmat');
+  const displayRole = activeUser?.roleName || (isOwner ? 'Propietario' : 'Administrador');
+  const roleCode = activeUser?.role || (isOwner ? 'OWNER' : 'ADMIN');
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navSections = [
@@ -176,16 +215,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </button>
           </div>
 
-          {/* User Badge */}
-          <div className="mt-4 flex items-center justify-between px-3 py-2 rounded-lg bg-stone-900/80 border border-stone-800">
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <div className="text-left">
-                <p className="text-xs font-semibold text-stone-200">tino</p>
-                <p className="text-[10px] text-amber-400/90 font-medium">Administrador</p>
+          {/* User Badge Dinámico por Usuario */}
+          <div className="mt-4 flex items-center justify-between px-3 py-2 rounded-xl bg-stone-900/90 border border-stone-800 shadow-inner">
+            <div className="flex items-center space-x-2.5 min-w-0">
+              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+              <div className="text-left min-w-0">
+                <p className="text-xs font-bold text-stone-100 truncate">
+                  {displayName}
+                </p>
+                <div className="flex items-center space-x-1.5 mt-0.5">
+                  <span className={`text-[10px] font-semibold ${isOwner ? 'text-amber-400' : 'text-sky-400'}`}>
+                    {displayRole}
+                  </span>
+                  <span className={`text-[9px] px-1 py-0.2 rounded font-mono font-bold ${
+                    isOwner ? 'bg-amber-400/20 text-amber-300 border border-amber-500/30' : 'bg-sky-400/20 text-sky-300 border border-sky-500/30'
+                  }`}>
+                    {roleCode}
+                  </span>
+                </div>
               </div>
             </div>
-            <ShieldCheck className="w-4 h-4 text-amber-400/80" />
+            {isOwner ? (
+              <Crown className="w-4 h-4 text-amber-400 shrink-0" />
+            ) : (
+              <ShieldCheck className="w-4 h-4 text-sky-400 shrink-0" />
+            )}
           </div>
         </div>
 
