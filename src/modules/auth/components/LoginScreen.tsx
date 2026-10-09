@@ -24,11 +24,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
-  const fillCredentials = (email: string, pass: string) => {
-    setAuthEmail(email);
-    setAuthPassword(pass);
-  };
-
   return (
     <div className="min-h-screen bg-[#181716] text-[#E4DFD7] flex items-center justify-center p-4 relative overflow-hidden font-sans selection:bg-[#A59B8F] selection:text-[#181716]">
       {/* Background Glow */}
@@ -50,49 +45,20 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               Control Administrativo
             </h1>
             <p className="text-xs text-[#A59B8F]/80 mt-1">
-              Acceso restringido para Propietarios y Administradores
+              Ingresa tus credenciales autorizadas
             </p>
-          </div>
-        </div>
-
-        {/* Quick Credentials Chips */}
-        <div className="bg-[#181716]/80 border border-[#61564A]/30 rounded-2xl p-3.5 space-y-2">
-          <p className="text-[10px] uppercase font-bold tracking-widest text-[#A59B8F] text-center">
-            Credenciales de Sistema (1-Clic)
-          </p>
-          <div className="grid grid-cols-2 gap-2 text-left">
-            <button
-              type="button"
-              onClick={() => fillCredentials('valentino@obsidiana.com', '30092023')}
-              className="p-2 rounded-xl bg-[#242220] hover:bg-[#61564A]/30 border border-[#61564A]/40 transition text-xs flex flex-col cursor-pointer group"
-            >
-              <div className="flex items-center space-x-1 text-[#E4DFD7] font-semibold text-[11px] group-hover:text-amber-300">
-                <Crown className="w-3 h-3 text-amber-400" />
-                <span>OWNER</span>
-              </div>
-              <span className="text-[10px] text-[#A59B8F] truncate">valentino@obsidiana.com</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => fillCredentials('ruben@obsidiana.com', '3009202620')}
-              className="p-2 rounded-xl bg-[#242220] hover:bg-[#61564A]/30 border border-[#61564A]/40 transition text-xs flex flex-col cursor-pointer group"
-            >
-              <div className="flex items-center space-x-1 text-[#E4DFD7] font-semibold text-[11px] group-hover:text-sky-300">
-                <ShieldCheck className="w-3 h-3 text-sky-400" />
-                <span>ADMIN</span>
-              </div>
-              <span className="text-[10px] text-[#A59B8F] truncate">ruben@obsidiana.com</span>
-            </button>
           </div>
         </div>
 
         {/* Login Form */}
         <form onSubmit={onLogin} className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-[#A59B8F] uppercase tracking-wider block">
-              Correo Electrónico
-            </label>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-[#A59B8F] uppercase tracking-wider block">
+                Correo Electrónico
+              </label>
+              <span className="text-[10px] text-[#A59B8F]/60">Selecciona o escribe</span>
+            </div>
             <div className="relative">
               <Mail className="w-4 h-4 text-[#A59B8F] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
@@ -106,9 +72,40 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 className="w-full bg-[#181716] border border-[#61564A]/50 rounded-xl pl-10 pr-4 py-3 text-sm text-[#E4DFD7] placeholder-[#61564A] focus:outline-none focus:border-[#A59B8F] transition"
               />
             </div>
+
+            {/* Botones para autorellenar ÚNICAMENTE el correo (la contraseña nunca se autorellena) */}
+            <div className="flex items-center gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setAuthEmail('valentino@obsidiana.com')}
+                title="Autorellenar correo de Valentino"
+                className={`text-[11px] px-2.5 py-1 rounded-lg border transition flex items-center space-x-1.5 cursor-pointer ${
+                  authEmail === 'valentino@obsidiana.com'
+                    ? 'bg-[#A59B8F]/20 border-[#A59B8F] text-[#E4DFD7] font-semibold'
+                    : 'bg-[#181716] border-[#61564A]/40 text-[#A59B8F] hover:text-[#E4DFD7] hover:border-[#A59B8F]/80'
+                }`}
+              >
+                <Crown className="w-3 h-3 text-amber-400" />
+                <span>valentino@obsidiana.com</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setAuthEmail('ruben@obsidiana.com')}
+                title="Autorellenar correo de Rubén"
+                className={`text-[11px] px-2.5 py-1 rounded-lg border transition flex items-center space-x-1.5 cursor-pointer ${
+                  authEmail === 'ruben@obsidiana.com'
+                    ? 'bg-[#A59B8F]/20 border-[#A59B8F] text-[#E4DFD7] font-semibold'
+                    : 'bg-[#181716] border-[#61564A]/40 text-[#A59B8F] hover:text-[#E4DFD7] hover:border-[#A59B8F]/80'
+                }`}
+              >
+                <ShieldCheck className="w-3 h-3 text-sky-400" />
+                <span>ruben@obsidiana.com</span>
+              </button>
+            </div>
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <label className="text-xs font-semibold text-[#A59B8F] uppercase tracking-wider block">
               Contraseña
             </label>
@@ -118,7 +115,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="current-password"
                 required
-                placeholder="••••••••"
+                placeholder="Ingresa tu contraseña"
                 value={authPassword}
                 onChange={(e) => setAuthPassword(e.target.value)}
                 className="w-full bg-[#181716] border border-[#61564A]/50 rounded-xl pl-10 pr-10 py-3 text-sm text-[#E4DFD7] placeholder-[#61564A] focus:outline-none focus:border-[#A59B8F] transition font-mono"
