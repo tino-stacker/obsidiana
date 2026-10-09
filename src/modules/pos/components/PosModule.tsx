@@ -404,7 +404,7 @@ export const PosModule: React.FC<PosModuleProps> = ({
       };
 
       setGeneratedReceipt(receiptObj);
-      setReceiptTab(deliveryType === 'provincia' ? 'provincia' : 'lima');
+      setReceiptTab('a4');
       showToastNotice(`🎉 ¡Venta ${orderNumber} registrada con éxito!`, 'success');
 
     } catch (err: any) {

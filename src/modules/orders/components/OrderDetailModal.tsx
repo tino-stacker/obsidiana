@@ -17,6 +17,7 @@ import { Order, OrderStatus, Province, Zone } from '../../../types';
 import { PackageShippingLabelModal } from '../../../components/PackageShippingLabelModal';
 import { EditOrderModal } from '../../../components/EditOrderModal';
 import { printElement } from '../../../lib/printHelper';
+import { printSalesNoteA4 } from '../../../lib/salesNoteA4';
 import { OrderDetailPrintableReceipt } from './OrderDetailPrintableReceipt';
 import { OrderAnularModal, OrderDeleteModal } from './OrderActionModals';
 
@@ -81,7 +82,41 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   };
 
   const handlePrintReceipt = () => {
-    printElement('order-detail-printable-receipt', `Nota de Venta #${order.orderNumber}`);
+    const c: any = order.customer || {};
+    const adelanto = Number(order.adelanto || 0);
+    printSalesNoteA4({
+      noteNumber: order.numeroNota || order.orderNumber,
+      date: new Date(order.createdAt).toLocaleString('es-PE', {
+        day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',
+      }),
+      trackingCode: order.trackingCode,
+      customer: {
+        name: c.name,
+        doc: c.documentNumber || c.docNumber || c.document,
+        phone: c.phone,
+        email: c.email,
+        address: c.address,
+        reference: c.reference,
+        district: c.district,
+        province: c.province,
+      },
+      deliveryLabel: [order.tipoEntrega, order.agenciaEnvio || c.zone].filter(Boolean).join(' · ') || 'Delivery',
+      items: order.items.map((i) => ({
+        name: i.productName,
+        sku: i.sku,
+        quantity: i.quantity,
+        unitPrice: i.unitPrice,
+        total: i.total,
+      })),
+      subtotal: order.subtotal,
+      shippingFee: order.shippingFee,
+      discount: order.descuento,
+      total: order.total,
+      adelanto,
+      saldo: order.saldo !== undefined && order.saldo !== null ? Number(order.saldo) : order.total - adelanto,
+      paymentMethod: order.paymentMethod,
+      notes: c.notes,
+    });
   };
 
   const handleConfirmAnular = async () => {

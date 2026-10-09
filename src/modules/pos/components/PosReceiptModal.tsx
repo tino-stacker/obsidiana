@@ -16,10 +16,12 @@ import {
   Printer, 
   Truck, 
   Send, 
-  Plus 
+  Plus,
+  Download
 } from 'lucide-react';
 import { OrderItem } from '../../../types';
 import { ObsidianaLogoSvg, MotorbikeIconSvg, PackageBoxIconSvg } from './PosBrandIcons';
+import { buildSalesNoteHtml, printSalesNoteA4, SalesNoteData } from '../../../lib/salesNoteA4';
 
 export interface PosGeneratedReceipt {
   orderNumber: string;
@@ -52,7 +54,39 @@ export interface PosGeneratedReceipt {
   changeAmount?: number;
 }
 
-export type PosReceiptTab = 'lima' | 'provincia' | 'cliente_frente' | 'cliente_reverso' | 'todas';
+export type PosReceiptTab = 'a4' | 'lima' | 'provincia' | 'cliente_frente' | 'cliente_reverso' | 'todas';
+
+export const posReceiptToSalesNote = (receipt: PosGeneratedReceipt): SalesNoteData => ({
+  noteNumber: receipt.receiptNumber || receipt.orderNumber,
+  date: receipt.date,
+  trackingCode: receipt.trackingCode,
+  customer: {
+    name: receipt.customer.name,
+    doc: receipt.customer.doc,
+    phone: receipt.customer.phone,
+    email: receipt.customer.email,
+    address: receipt.customer.address,
+    reference: receipt.customer.reference,
+    district: receipt.customer.district,
+    province: receipt.customer.province,
+  },
+  deliveryLabel: receipt.viaEnvio,
+  items: receipt.items.map((i) => ({
+    name: i.productName,
+    sku: i.sku,
+    material: i.material,
+    quantity: i.quantity,
+    unitPrice: i.unitPrice,
+    total: i.total,
+  })),
+  subtotal: receipt.subtotal,
+  shippingFee: receipt.shippingFee,
+  discount: receipt.discount,
+  total: receipt.total,
+  adelanto: receipt.adelanto,
+  saldo: receipt.saldo,
+  paymentMethod: receipt.paymentMethod,
+});
 
 interface PosReceiptModalProps {
   receipt: PosGeneratedReceipt | null;
@@ -79,6 +113,10 @@ export const PosReceiptModal: React.FC<PosReceiptModalProps> = ({
 }) => {
   if (!receipt) return null;
 
+  const salesNote = posReceiptToSalesNote(receipt);
+  const handleDownloadA4 = () => printSalesNoteA4(salesNote);
+  const handlePrintClick = () => (receiptTab === 'a4' ? handleDownloadA4() : onPrint());
+
   return (
     <div className="fixed inset-0 bg-black/80 z-50 flex items-start justify-center p-2 sm:p-4 py-10 overflow-y-auto backdrop-blur-xs">
       <div className="bg-[#24211E] rounded-2xl max-w-4xl w-full p-4 sm:p-6 space-y-4 border border-[#61564A] shadow-2xl relative my-6 text-[#E4DFD7]">
@@ -96,6 +134,17 @@ export const PosReceiptModal: React.FC<PosReceiptModalProps> = ({
 
           {/* Template Variant Tabs */}
           <div className="flex flex-wrap items-center gap-1 bg-[#161716] p-1 rounded-xl border border-[#61564A]">
+            <button
+              type="button"
+              onClick={() => onSelectTab('a4')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center space-x-1 ${
+                receiptTab === 'a4' ? 'bg-[#E4DFD7] text-[#161716] shadow-xs' : 'text-[#A59B8F] hover:text-[#E4DFD7]'
+              }`}
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>Nota A4 (PDF)</span>
+            </button>
+
             <button
               type="button"
               onClick={() => onSelectTab('lima')}
@@ -149,8 +198,35 @@ export const PosReceiptModal: React.FC<PosReceiptModalProps> = ({
           </button>
         </div>
 
+        {/* A4 PREVIEW (documento autocontenido idéntico al PDF) */}
+        {receiptTab === 'a4' && (
+          <div className="rounded-xl overflow-hidden border border-[#61564A] bg-[#D9D4CC]">
+            <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 bg-[#161716] border-b border-[#61564A]">
+              <p className="text-[11px] text-[#A59B8F]">
+                Vista previa A4. En el diálogo elige <b className="text-[#E4DFD7]">“Guardar como PDF”</b> como destino.
+              </p>
+              <button
+                type="button"
+                onClick={handleDownloadA4}
+                className="bg-[#E4DFD7] hover:bg-white text-[#161716] font-black py-1.5 px-3 rounded-lg text-[11px] flex items-center space-x-1.5 transition-all cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Descargar PDF A4</span>
+              </button>
+            </div>
+            <div className="overflow-x-auto">
+              <iframe
+                title="Vista previa Nota de Venta A4"
+                srcDoc={buildSalesNoteHtml(salesNote)}
+                className="block mx-auto bg-[#D9D4CC]"
+                style={{ width: '100%', minWidth: '222mm', height: '1200px', border: 0 }}
+              />
+            </div>
+          </div>
+        )}
+
         {/* PRINTABLE AREA CONTAINING EXACT VECTOR TEMPLATES */}
-        <div id="printable-receipt" className="bg-white text-slate-900 rounded-xl p-4 sm:p-6 shadow-inner font-sans overflow-x-auto">
+        <div id="printable-receipt" className={`bg-white text-slate-900 rounded-xl p-4 sm:p-6 shadow-inner font-sans overflow-x-auto ${receiptTab === 'a4' ? 'hidden' : ''}`}>
           {/* VARIANT 1: NOTA DE VENTA LIMA */}
           {(receiptTab === 'lima' || receiptTab === 'todas') && (
             <div className="max-w-2xl mx-auto border border-[#61564A] bg-white text-slate-900 overflow-hidden font-sans shadow-sm mb-4 print:mb-0 print:border-black print:max-w-full">
@@ -767,14 +843,23 @@ export const PosReceiptModal: React.FC<PosReceiptModalProps> = ({
         </div>
 
         {/* Modal Actions */}
-        <div className="border-t border-[#61564A]/40 pt-4 grid grid-cols-1 sm:grid-cols-4 gap-2">
+        <div className="border-t border-[#61564A]/40 pt-4 grid grid-cols-1 sm:grid-cols-5 gap-2">
           <button
             type="button"
-            onClick={onPrint}
+            onClick={handleDownloadA4}
+            className="bg-[#E4DFD7] hover:bg-white text-[#161716] font-black py-2.5 px-2 rounded-xl text-[11px] flex items-center justify-center space-x-1 transition-all cursor-pointer shadow-md"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Descargar PDF A4</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handlePrintClick}
             className="bg-[#61564A] hover:bg-[#A59B8F] text-white font-bold py-2.5 px-2 rounded-xl text-[11px] flex items-center justify-center space-x-1 transition-all cursor-pointer border border-[#A59B8F]/30"
           >
             <Printer className="w-3.5 h-3.5 text-[#E4DFD7]" />
-            <span>Imprimir / PDF</span>
+            <span>{receiptTab === 'a4' ? 'Imprimir A4' : 'Imprimir plantilla'}</span>
           </button>
 
           <button
